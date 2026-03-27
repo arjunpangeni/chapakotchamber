@@ -13,8 +13,8 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Menu, ChevronDown, Settings, Bell } from 'lucide-react'
-import { useState } from 'react'
+import { Menu, X, ChevronDown, Settings, Bell } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
 type NavigationSession = {
   user?: {
@@ -60,7 +60,35 @@ export default function NavigationClient({
   activeJobsCount?: number
 }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const drawerRef = useRef<HTMLDivElement | null>(null)
   const pathname = usePathname()
+
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previous
+    }
+  }, [mobileOpen])
+
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+      if (drawerRef.current?.contains(target)) return
+      setMobileOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => document.removeEventListener('pointerdown', handlePointerDown)
+  }, [mobileOpen])
 
   const isActive = (href: string) =>
     pathname === href || pathname?.startsWith(`${href}/`)
@@ -96,7 +124,7 @@ export default function NavigationClient({
             className="h-8 sm:h-9 md:h-10 lg:h-11 w-auto dark:invert shrink-0"
           />
           <span className="block text-xs sm:text-sm md:text-base font-semibold leading-tight text-slate-800 dark:text-slate-100 max-w-[120px] sm:max-w-[140px] md:max-w-none">
-            चापाकोट उद्योग वाणिज्य संघ.
+            चापाकोट उद्योग वाणिज्य संघ
           </span>
         </Link>
 
@@ -163,71 +191,6 @@ export default function NavigationClient({
           </Link>
         </div>
 
-        {/* Mobile Menu */}
-        {mobileOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-b border-border/20 shadow-lg">
-            <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 space-y-2">
-              {mainLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`block px-4 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-                    isActive(item.href)
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-foreground/70 hover:bg-muted'
-                  }`}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="inline-flex items-center">
-                    {item.label}
-                    {item.href === '/jobs' && <JobsNotification count={activeJobsCount} />}
-                  </span>
-                </Link>
-              ))}
-
-              <div className="border-t border-border/20 pt-2 mt-2">
-                <div className="px-4 py-1 text-xs font-semibold text-foreground/60 uppercase tracking-wide">About</div>
-                {aboutLinks.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`block px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
-                      isActive(item.href)
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-foreground/70 hover:bg-muted'
-                    }`}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-
-              <Link
-                href="/contact"
-                className={`block px-4 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-                  isActive('/contact')
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground/70 hover:bg-muted'
-                }`}
-                onClick={() => setMobileOpen(false)}
-              >
-                Contact
-              </Link>
-
-              {session?.user?.role === 'admin' && (
-                <Link
-                  href="/admin"
-                  className="block px-4 py-2.5 text-primary hover:bg-primary/10 rounded-xl font-semibold transition-all duration-200 border-t border-border/20 pt-3 mt-3"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Admin Dashboard
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
-
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
           <ThemeToggle />
 
@@ -270,77 +233,103 @@ export default function NavigationClient({
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2.5 rounded-xl hover:bg-primary/10 transition-colors duration-300"
+            className="lg:hidden h-10 w-10 inline-flex items-center justify-center rounded-xl transition-colors duration-300 hover:bg-primary/10 active:scale-95"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav-drawer"
           >
-            <Menu className="h-5 w-5" />
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Navigation */}
-      {mobileOpen && (
-        <div className="lg:hidden border-t border-white/20 bg-white/70 dark:bg-slate-950/75 backdrop-blur-xl p-3 sm:p-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-          {mainLinks.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`block px-4 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-                isActive(item.href) 
-                  ? 'bg-primary/10 text-primary' 
-                  : 'text-foreground/70 hover:bg-muted'
-              }`}
+      <div
+        className={`lg:hidden fixed inset-0 z-40 transition-opacity duration-250 ${mobileOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}
+      >
+        <button
+          aria-label="Close mobile menu"
+          className="absolute inset-0 bg-slate-900/45 backdrop-blur-[1px]"
+          onClick={() => setMobileOpen(false)}
+        />
+        <div
+          id="mobile-nav-drawer"
+          className={`absolute left-0 right-0 top-0 p-3 pt-16 transition-transform duration-250 sm:p-4 sm:pt-20 ${mobileOpen ? 'translate-y-0' : '-translate-y-4'}`}
+        >
+          <div
+            ref={drawerRef}
+            className="relative mx-auto w-full max-w-[88vw] rounded-2xl border border-sky-200/70 bg-gradient-to-br from-white via-sky-50 to-blue-100/90 p-2 shadow-[0_20px_50px_rgba(14,116,144,0.18)] backdrop-blur-xl dark:border-sky-900/50 dark:from-slate-950 dark:via-slate-900 dark:to-sky-950/90 sm:max-w-lg sm:p-2.5"
+          >
+            <button
+              type="button"
+              aria-label="Close mobile menu"
               onClick={() => setMobileOpen(false)}
+              className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-sky-200 bg-white/90 text-slate-700 transition hover:bg-white dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-200"
             >
-              <span className="inline-flex items-center">
-                {item.label}
-                {item.href === '/jobs' && <JobsNotification count={activeJobsCount} />}
-              </span>
-            </Link>
-          ))}
+              <X className="h-4 w-4" />
+            </button>
 
-          <div className="space-y-1 border-t border-border/20 pt-3 mt-3">
-            <span className="block text-xs font-bold uppercase tracking-wider text-foreground/50 px-4 py-2">About</span>
-            {aboutLinks.map((item) => (
+            {mainLinks.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`block px-4 py-2.5 text-sm rounded-xl transition-all duration-200 ${
-                  isActive(item.href) 
-                    ? 'bg-primary/10 text-primary font-semibold' 
-                    : 'text-foreground/70 hover:bg-muted'
+                className={`block rounded-xl px-2.5 py-2 font-semibold transition-all duration-200 ${
+                  isActive(item.href)
+                    ? 'bg-sky-100/80 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200'
+                    : 'text-foreground/80 hover:bg-white/70 dark:hover:bg-slate-800/70'
                 }`}
                 onClick={() => setMobileOpen(false)}
               >
-                {item.label}
+                <span className="inline-flex items-center">
+                  {item.label}
+                  {item.href === '/jobs' && <JobsNotification count={activeJobsCount} />}
+                </span>
               </Link>
             ))}
-          </div>
 
-          <Link
-            href="/contact"
-            className={`block px-4 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-              isActive('/contact') 
-                ? 'bg-primary/10 text-primary' 
-                : 'text-foreground/70 hover:bg-muted'
-            }`}
-            onClick={() => setMobileOpen(false)}
-          >
-            Contact
-          </Link>
+            <div className="mt-2 space-y-1 border-t border-sky-200/70 pt-2 dark:border-slate-700">
+              <span className="block px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-foreground/50">About</span>
+              {aboutLinks.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`block rounded-xl px-2.5 py-2 text-sm transition-all duration-200 ${
+                    isActive(item.href)
+                      ? 'bg-sky-100/80 text-sky-800 font-semibold dark:bg-sky-900/40 dark:text-sky-200'
+                      : 'text-foreground/80 hover:bg-white/70 dark:hover:bg-slate-800/70'
+                  }`}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
 
-          {session?.user?.role === 'admin' && (
             <Link
-              href="/admin"
-              className="block px-4 py-2.5 text-primary hover:bg-primary/10 rounded-xl font-semibold transition-all duration-200 border-t border-border/20 pt-3 mt-3"
+              href="/contact"
+              className={`mt-1 block rounded-xl px-2.5 py-2 font-semibold transition-all duration-200 ${
+                isActive('/contact')
+                  ? 'bg-sky-100/80 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200'
+                  : 'text-foreground/80 hover:bg-white/70 dark:hover:bg-slate-800/70'
+              }`}
               onClick={() => setMobileOpen(false)}
             >
-              Admin Dashboard
+              Contact
             </Link>
-          )}
+
+            {session?.user?.role === 'admin' && (
+              <Link
+                href="/admin"
+                className="mt-2 block rounded-xl border-t border-sky-200/70 px-2.5 pb-2 pt-2 font-semibold text-sky-700 transition-all duration-200 hover:bg-white/70 dark:border-slate-700 dark:text-sky-300 dark:hover:bg-slate-800/70"
+                onClick={() => setMobileOpen(false)}
+              >
+                Admin Dashboard
+              </Link>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </nav>
   )
 }
