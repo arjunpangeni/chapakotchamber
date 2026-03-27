@@ -105,7 +105,7 @@ export const config = {
       // For Google OAuth, check if email is whitelisted
       if (account?.provider === 'google') {
         if (!adminWhitelist.includes(user.email || '')) {
-          return false
+          return '/auth/signin?error=unauthorized_google'
         }
 
         try {

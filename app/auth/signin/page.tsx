@@ -22,6 +22,11 @@ export default function SignIn() {
     if (typeof window === 'undefined') return
     const urlParams = new URLSearchParams(window.location.search)
     setCallbackUrl(urlParams.get('callbackUrl') || '/admin')
+
+    const errorCode = urlParams.get('error')
+    if (errorCode === 'unauthorized_google' || errorCode === 'AccessDenied') {
+      setError('This Google account is not authorized. Please try login with the correct Gmail account.')
+    }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
