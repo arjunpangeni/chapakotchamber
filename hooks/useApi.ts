@@ -1,0 +1,260 @@
+import useSWR from 'swr'
+
+const swrConfig = {
+  revalidateOnFocus: false,
+  revalidateOnReconnect: false,
+  dedupingInterval: 30_000,
+  keepPreviousData: true,
+}
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url)
+  const data = await res.json()
+  if (!res.ok) {
+    throw new Error(data?.error || 'Request failed')
+  }
+
+  return data
+}
+
+export function useMembers(
+  page = 1,
+  search = '',
+  businessType = 'all',
+  ward = 'all',
+  membershipStatus = 'all'
+) {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (search) params.append('search', search)
+  if (businessType && businessType !== 'all') params.append('businessType', businessType)
+  if (ward && ward !== 'all') params.append('ward', ward)
+  if (membershipStatus && membershipStatus !== 'all') params.append('membershipStatus', membershipStatus)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/members?${params.toString()}`,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useMembersWithFallback(
+  page = 1,
+  search = '',
+  businessType = 'all',
+  ward = 'all',
+  membershipStatus = 'all',
+  fallbackData?: any
+) {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (search) params.append('search', search)
+  if (businessType && businessType !== 'all') params.append('businessType', businessType)
+  if (ward && ward !== 'all') params.append('ward', ward)
+  if (membershipStatus && membershipStatus !== 'all') params.append('membershipStatus', membershipStatus)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/members?${params.toString()}`,
+    fetcher,
+    { ...swrConfig, fallbackData }
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useMembersAll() {
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/members?all=true`,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useMember(id: string) {
+  const { data, error, isLoading, mutate } = useSWR(
+    id ? `/api/members/${id}` : null,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useJobs(page = 1, search = '', jobType = 'all') {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (search) params.append('search', search)
+  if (jobType && jobType !== 'all') params.append('jobType', jobType)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/jobs?${params.toString()}`,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useJobsWithFallback(page = 1, search = '', jobType = 'all', fallbackData?: any) {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (search) params.append('search', search)
+  if (jobType && jobType !== 'all') params.append('jobType', jobType)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/jobs?${params.toString()}`,
+    fetcher,
+    { ...swrConfig, fallbackData }
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useJob(id: string) {
+  const { data, error, isLoading, mutate } = useSWR(
+    id ? `/api/jobs/${id}` : null,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useContents(page = 1, type = 'all', search = '') {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (type) params.append('type', type)
+  if (search) params.append('search', search)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/contents?${params.toString()}`,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useContentsWithFallback(page = 1, type = 'all', search = '', fallbackData?: any) {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (type) params.append('type', type)
+  if (search) params.append('search', search)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/contents?${params.toString()}`,
+    fetcher,
+    { ...swrConfig, fallbackData }
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useContent(slug: string) {
+  const { data, error, isLoading, mutate } = useSWR(
+    slug ? `/api/contents?slug=${encodeURIComponent(slug)}` : null,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useContentWithFallback(slug: string, fallbackData?: any) {
+  const { data, error, isLoading, mutate } = useSWR(
+    slug ? `/api/contents?slug=${encodeURIComponent(slug)}` : null,
+    fetcher,
+    { ...swrConfig, fallbackData }
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useNews(page = 1, search = '') {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (search) params.append('search', search)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/news?${params.toString()}`,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useNewsItem(id: string) {
+  const { data, error, isLoading, mutate } = useSWR(
+    id ? `/api/news/${id}` : null,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useGallery(page = 1, category = '') {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (category) params.append('category', category)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/gallery?${params.toString()}`,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useGalleryWithFallback(page = 1, category = '', fallbackData?: any) {
+  const params = new URLSearchParams()
+  params.append('page', page.toString())
+  if (category) params.append('category', category)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/gallery?${params.toString()}`,
+    fetcher,
+    { ...swrConfig, fallbackData }
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useGalleryItem(id: string) {
+  const { data, error, isLoading, mutate } = useSWR(
+    id ? `/api/gallery/${id}` : null,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useCommitteeMembers(type = 'all') {
+  const params = new URLSearchParams()
+  if (type !== 'all') params.append('type', type)
+
+  const { data, error, isLoading, mutate } = useSWR(
+    `/api/committee?${params.toString()}`,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
+
+export function useCommitteeMember(id: string) {
+  const { data, error, isLoading, mutate } = useSWR(
+    id ? `/api/committee/${id}` : null,
+    fetcher,
+    swrConfig
+  )
+
+  return { data, error, isLoading, mutate }
+}
