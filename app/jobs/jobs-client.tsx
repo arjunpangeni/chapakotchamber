@@ -45,6 +45,9 @@ export default function JobsClient({
   
   const { data, isLoading } = useJobsWithFallback(page, debouncedSearch, jobType, fallbackData)
 
+  // Only show loading when there's truly no data available
+  const showLoading = isLoading && !data?.jobs
+
   const memberByName = useMemo(() => {
     const map = new Map()
     for (const m of membersAll?.members || []) {
@@ -137,7 +140,7 @@ export default function JobsClient({
           </CardContent>
         </Card>
 
-        {isLoading ? (
+        {showLoading ? (
           <div className="grid gap-4 md:gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="border-primary/10 sky-card animate-pulse">

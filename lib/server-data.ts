@@ -1,8 +1,16 @@
 ﻿import { unstable_cache } from 'next/cache'
 import { getDatabase } from '@/lib/mongodb'
 import { CACHE_TAGS } from '@/lib/cache-tags'
+import { recordQueryExecution, getPerformanceSummary } from '@/lib/performance-monitor'
 
 const REVALIDATE_SECONDS = 3600
+
+// Performance thresholds (in milliseconds)
+const PERFORMANCE_THRESHOLDS = {
+  statistics: 500, // Alert if stats queries take > 500ms
+  contents: 300,   // Alert if content queries take > 300ms
+  members: 300,    // Alert if member queries take > 300ms
+}
 
 const MEMBERS_PER_PAGE = 15
 const JOBS_PER_PAGE = 20
@@ -260,6 +268,73 @@ export async function getCommitteeMembers(type: 'current' | 'past' | 'all' = 'al
     },
     [CACHE_TAGS.committee, type],
     { revalidate: 86400, tags: [CACHE_TAGS.committee] } // revalidate daily since not changing regularly
+  )()
+}
+
+// Optimized home page content query - avoids counting all documents
+export async function getHomePageContent() {
+  return unstable_cache(
+    async () => {
+      const db = await getDatabase()
+      const baseFilter = { published: true, type: { $ne: 'roadblocker' } }
+      const now = new Date().toISOString()
+      const filter = {
+        ...baseFilter,
+        $or: [{ expiresAt: { $exists: false } }, { expiresAt: null }, { expiresAt: { $gt: now } }]
+      }
+
+      // Start monitoring overall statistics query time
+      const statsStartTime = Date.now()
+
+      // Fetch all content types in parallel without counting (faster for home page)
+      const [notices, news, articles, membersCount, jobsCount, newsCount, articleCount] = await Promise.all([
+        db
+          .collection('contents')
+          .find({ ...filter, type: 'notice' })
+          .sort({ isPinned: -1, createdAt: -1 })
+          .limit(4)
+          .toArray(),
+        db
+          .collection('contents')
+          .find({ ...filter, type: 'news' })
+          .sort({ isPinned: -1, createdAt: -1 })
+          .limit(6)
+          .toArray(),
+        db
+          .collection('contents')
+          .find({ ...filter, type: 'article' })
+          .sort({ isPinned: -1, createdAt: -1 })
+          .limit(6)
+          .toArray(),
+        db.collection('members').countDocuments({ membershipStatus: { $ne: 'inactive' } }),
+        db.collection('jobs').countDocuments({ status: 'active' }),
+        db.collection('contents').countDocuments({ ...filter, type: 'news' }),
+        db.collection('contents').countDocuments({ ...filter, type: 'article' }),
+      ])
+
+      const statsExecutionTime = Date.now() - statsStartTime
+      recordQueryExecution('getHomePageContent', statsExecutionTime, PERFORMANCE_THRESHOLDS.statistics)
+
+      // Log individual stat collection times
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 Stats Query Performance: ${statsExecutionTime}ms`)
+        console.log(getPerformanceSummary())
+      }
+
+      return {
+        notices: notices.map((c) => toId(c)),
+        news: news.map((c) => toId(c)),
+        articles: articles.map((c) => toId(c)),
+        stats: {
+          members: membersCount,
+          jobs: jobsCount,
+          newsCount: newsCount,
+          articleCount: articleCount,
+        }
+      }
+    },
+    [CACHE_TAGS.contents, 'home'],
+    { revalidate: REVALIDATE_SECONDS, tags: [CACHE_TAGS.contents] }
   )()
 }
 

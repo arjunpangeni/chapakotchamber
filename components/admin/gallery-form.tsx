@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
+import { generateGallerySlug } from '@/lib/slug-generator'
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import { AlertCircle, CheckCircle } from 'lucide-react'
@@ -53,6 +54,16 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
     },
   })
 
+  // Auto-generate slug from event name
+  const handleEventNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const eventName = e.target.value
+    if (eventName && !item) {
+      // Only auto-generate for new albums, not edits
+      const slug = generateGallerySlug(eventName)
+      setValue('eventSlug', slug)
+    }
+  }
+
   const normalizeSlug = (value: string) =>
     (value || '')
       .toString()
@@ -61,33 +72,93 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '')
 
+  // Supported image MIME types
+  const SUPPORTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+  const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+
+  const validateImageFile = (file: File): { valid: boolean; error?: string } => {
+    // Check file type
+    if (!SUPPORTED_TYPES.includes(file.type)) {
+      return {
+        valid: false,
+        error: `File type "${file.type || 'unknown'}" not supported. Supported types: JPEG, PNG, WebP, GIF`,
+      }
+    }
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        valid: false,
+        error: `File size (${(file.size / 1024 / 1024).toFixed(2)}MB) exceeds max limit of 50MB`,
+      }
+    }
+
+    return { valid: true }
+  }
+
   const resizeImage = (file: File, maxWidth = 1600): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const img = new window.Image()
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Image loading timeout - file may be corrupted'))
+      }, 10000) // 10 second timeout
+
       img.onload = () => {
-        const scale = Math.min(1, maxWidth / img.width)
-        const canvas = document.createElement('canvas')
-        canvas.width = img.width * scale
-        canvas.height = img.height * scale
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return reject(new Error('Canvas context failed'))
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-        canvas.toBlob((blob) => {
-          if (!blob) return reject(new Error('Blob conversion failed'))
-          resolve(blob)
-        }, 'image/jpeg', 0.85)
+        clearTimeout(timeoutId)
+        try {
+          const scale = Math.min(1, maxWidth / img.width)
+          const canvas = document.createElement('canvas')
+          canvas.width = img.width * scale
+          canvas.height = img.height * scale
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return reject(new Error('Canvas context failed'))
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+          canvas.toBlob((blob) => {
+            if (!blob) return reject(new Error('Blob conversion failed'))
+            resolve(blob)
+          }, 'image/jpeg', 0.85)
+        } catch (err) {
+          reject(new Error(`Image processing failed: ${(err as Error).message}`))
+        }
       }
-      img.onerror = () => reject(new Error('Image load failed'))
+      img.onerror = () => {
+        clearTimeout(timeoutId)
+        reject(new Error('Failed to load image - file may be corrupted or unsupported format'))
+      }
+      img.onabort = () => {
+        clearTimeout(timeoutId)
+        reject(new Error('Image loading was aborted'))
+      }
       img.src = URL.createObjectURL(file)
     })
   }
 
   const uploadFile = async (file: File, folder: string) => {
-    const resizedBlob = await resizeImage(file, 1600)
-    const resizedFile = new File([resizedBlob], file.name, { type: 'image/jpeg' })
+    // Validate file before processing
+    const validation = validateImageFile(file)
+    if (!validation.valid) {
+      throw new Error(validation.error)
+    }
+
+    // Try to resize, with graceful fallback
+    let uploadFile = file
+    try {
+      const resizedBlob = await resizeImage(file, 1600)
+      uploadFile = new File([resizedBlob], file.name, { type: 'image/jpeg' })
+    } catch (err) {
+      console.warn('Image resize failed, uploading original:', err)
+      // If resize fails, try uploading original file
+      // This handles animated GIFs and other special formats
+      if (file.type === 'image/gif') {
+        toast({
+          title: 'GIF Warning',
+          description: 'Animated GIF files are uploaded as-is without resizing',
+        })
+      }
+    }
 
     const formData = new FormData()
-    formData.append('file', resizedFile)
+    formData.append('file', uploadFile)
 
     const response = await fetch(`/api/upload?folder=${encodeURIComponent(folder)}`, {
       method: 'POST',
@@ -110,15 +181,50 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
 
-    setUploadQueue((prev) => [...prev, ...files])
+    // Validate all files first
+    const validFiles: File[] = []
+    const invalidErrors: string[] = []
 
-    const previews = files.map((file) => ({
-      url: URL.createObjectURL(file),
-      name: file.name,
-      file,
-    }))
+    for (const file of files) {
+      const validation = validateImageFile(file)
+      if (validation.valid) {
+        validFiles.push(file)
+      } else {
+        invalidErrors.push(`${file.name}: ${validation.error}`)
+      }
+    }
 
-    setImages((prev) => [...prev, ...previews])
+    // Show error if there are invalid files
+    if (invalidErrors.length > 0) {
+      const errorMessage = invalidErrors.slice(0, 3).join('\n') 
+        + (invalidErrors.length > 3 ? `\n...and ${invalidErrors.length - 3} more` : '')
+      setError(errorMessage)
+      toast({
+        title: 'Some files were not valid',
+        description: invalidErrors[0],
+        variant: 'destructive',
+      })
+    }
+
+    // Only add valid files
+    if (validFiles.length > 0) {
+      setUploadQueue((prev) => [...prev, ...validFiles])
+
+      const previews = validFiles.map((file) => ({
+        url: URL.createObjectURL(file),
+        name: file.name,
+        file,
+      }))
+
+      setImages((prev) => [...prev, ...previews])
+      
+      if (invalidErrors.length === 0) {
+        setError(null) // Clear error if all files are valid
+      }
+    }
+
+    // Reset input
+    e.target.value = ''
   }
 
   const onSubmit = async (data: any) => {
@@ -214,10 +320,11 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">Event Name</label>
+          <label className="text-sm font-medium">Event Name / Album Title</label>
           <Input
             {...register('eventName')}
-            placeholder="Event Name"
+            onChange={handleEventNameChange}
+            placeholder="e.g., Annual Conference 2024"
             className={errors.eventName ? 'border-red-500' : ''}
           />
           {errors.eventName && (
@@ -226,12 +333,12 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
         </div>
 
         <div>
-          <label className="text-sm font-medium">Event Slug</label>
+          <label className="text-sm font-medium">URL Slug (Auto-generated)</label>
           <Input
             {...register('eventSlug')}
-            placeholder="event-slug"
+            placeholder="auto-generated-slug"
             onBlur={(e) => {
-              const cleaned = normalizeSlug(e.target.value || watch('eventName') || '')
+              const cleaned = generateGallerySlug(e.target.value || watch('eventName') || '')
               setValue('eventSlug', cleaned, { shouldValidate: true })
             }}
             className={errors.eventSlug ? 'border-red-500' : ''}
@@ -239,6 +346,7 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
           {errors.eventSlug && (
             <span className="text-xs text-red-500">{errors.eventSlug.message?.toString()}</span>
           )}
+          <p className="text-xs text-muted-foreground mt-1">Auto-generated from title when creating new album.</p>
         </div>
       </div>
 
@@ -274,10 +382,11 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
           onClick={() => fileInputRef.current?.click()}
         >
           <p className="text-sm text-muted-foreground">Drag and drop images here or click to select multiple files.</p>
+          <p className="text-xs text-muted-foreground mt-1">Supported: JPEG, PNG, WebP, GIF (max 50MB each)</p>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
             multiple
             onChange={handleFilesSelected}
             className="hidden"

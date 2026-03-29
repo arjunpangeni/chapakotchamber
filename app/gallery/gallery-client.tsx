@@ -28,6 +28,9 @@ export default function GalleryClient({
   const [category, setCategory] = useState(initialCategory)
   const { data, isLoading } = useGalleryWithFallback(page, category, fallbackData)
 
+  // Only show loading when there's truly no data available
+  const showLoading = isLoading && !data?.albums
+
   return (
     <div className="min-h-screen public-sky">
       <NavigationClient session={session ?? null} activeJobsCount={activeJobsCount} />
@@ -66,7 +69,7 @@ export default function GalleryClient({
         </div>
 
         {/* Gallery Grid */}
-        {isLoading ? (
+        {showLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="card-modern sky-card overflow-hidden animate-pulse">

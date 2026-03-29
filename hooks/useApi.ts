@@ -1,10 +1,22 @@
 import useSWR from 'swr'
 
+// Production: 10 minutes of cache without revalidation
+// Only refetch when explicitly called via mutate()
 const swrConfig = {
   revalidateOnFocus: false,
   revalidateOnReconnect: false,
-  dedupingInterval: 30_000,
-  keepPreviousData: true,
+  revalidateIfStale: false, // Don't revalidate just because data is stale
+  dedupingInterval: 600_000, // 10 minutes - prevent duplicate requests
+  focusThrottleInterval: 300_000, // 5 minutes throttle on focus
+  keepPreviousData: true, // Show old data while fetching new
+  errorRetryCount: 2, // Retry failed requests twice
+  errorRetryInterval: 3000, // Wait 3 seconds between retries
+}
+
+// For search queries: more aggressive revalidation (1 minute)
+const swrConfigSearch = {
+  ...swrConfig,
+  dedupingInterval: 60_000, // 1 minute for search queries
 }
 
 const fetcher = async (url: string) => {
@@ -31,10 +43,13 @@ export function useMembers(
   if (ward && ward !== 'all') params.append('ward', ward)
   if (membershipStatus && membershipStatus !== 'all') params.append('membershipStatus', membershipStatus)
 
+  // Use search config if there's an active search filter
+  const config = search || businessType !== 'all' || ward !== 'all' ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/members?${params.toString()}`,
     fetcher,
-    swrConfig
+    config
   )
 
   return { data, error, isLoading, mutate }
@@ -55,10 +70,13 @@ export function useMembersWithFallback(
   if (ward && ward !== 'all') params.append('ward', ward)
   if (membershipStatus && membershipStatus !== 'all') params.append('membershipStatus', membershipStatus)
 
+  // Use search config if there's an active search filter
+  const config = search || businessType !== 'all' || ward !== 'all' ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/members?${params.toString()}`,
     fetcher,
-    { ...swrConfig, fallbackData }
+    { ...config, fallbackData }
   )
 
   return { data, error, isLoading, mutate }
@@ -90,10 +108,13 @@ export function useJobs(page = 1, search = '', jobType = 'all') {
   if (search) params.append('search', search)
   if (jobType && jobType !== 'all') params.append('jobType', jobType)
 
+  // Use search config if there's an active search filter
+  const config = search || jobType !== 'all' ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/jobs?${params.toString()}`,
     fetcher,
-    swrConfig
+    config
   )
 
   return { data, error, isLoading, mutate }
@@ -105,10 +126,13 @@ export function useJobsWithFallback(page = 1, search = '', jobType = 'all', fall
   if (search) params.append('search', search)
   if (jobType && jobType !== 'all') params.append('jobType', jobType)
 
+  // Use search config if there's an active search filter
+  const config = search || jobType !== 'all' ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/jobs?${params.toString()}`,
     fetcher,
-    { ...swrConfig, fallbackData }
+    { ...config, fallbackData }
   )
 
   return { data, error, isLoading, mutate }
@@ -130,10 +154,13 @@ export function useContents(page = 1, type = 'all', search = '') {
   if (type) params.append('type', type)
   if (search) params.append('search', search)
 
+  // Use search config if there's an active search filter
+  const config = search || type !== 'all' ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/contents?${params.toString()}`,
     fetcher,
-    swrConfig
+    config
   )
 
   return { data, error, isLoading, mutate }
@@ -145,10 +172,13 @@ export function useContentsWithFallback(page = 1, type = 'all', search = '', fal
   if (type) params.append('type', type)
   if (search) params.append('search', search)
 
+  // Use search config if there's an active search filter
+  const config = search || type !== 'all' ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/contents?${params.toString()}`,
     fetcher,
-    { ...swrConfig, fallbackData }
+    { ...config, fallbackData }
   )
 
   return { data, error, isLoading, mutate }
@@ -179,10 +209,13 @@ export function useNews(page = 1, search = '') {
   params.append('page', page.toString())
   if (search) params.append('search', search)
 
+  // Use search config if there's an active search filter
+  const config = search ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/news?${params.toString()}`,
     fetcher,
-    swrConfig
+    config
   )
 
   return { data, error, isLoading, mutate }
@@ -203,10 +236,13 @@ export function useGallery(page = 1, category = '') {
   params.append('page', page.toString())
   if (category) params.append('category', category)
 
+  // Use search config if there's an active category filter
+  const config = category ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/gallery?${params.toString()}`,
     fetcher,
-    swrConfig
+    config
   )
 
   return { data, error, isLoading, mutate }
@@ -217,10 +253,13 @@ export function useGalleryWithFallback(page = 1, category = '', fallbackData?: a
   params.append('page', page.toString())
   if (category) params.append('category', category)
 
+  // Use search config if there's an active category filter
+  const config = category ? swrConfigSearch : swrConfig
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/gallery?${params.toString()}`,
     fetcher,
-    { ...swrConfig, fallbackData }
+    { ...config, fallbackData }
   )
 
   return { data, error, isLoading, mutate }

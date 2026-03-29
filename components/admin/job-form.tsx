@@ -156,15 +156,16 @@ export default function JobForm({ job, onClose }: JobFormProps) {
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-              <Command shouldFilter={false}>
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2 sm:p-3" align="start">
+              <Command shouldFilter={false} className="rounded-lg border">
                 <CommandInput
                   placeholder="Search company..."
                   value={companySearch}
                   onValueChange={setCompanySearch}
+                  className="border-b dark:border-b-slate-700"
                 />
-                <CommandList>
-                  <CommandEmpty>No company found.</CommandEmpty>
+                <CommandList className="max-h-[300px]">
+                  <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">No company found.</CommandEmpty>
                   {filteredCompanyNames.map((companyName) => (
                     <CommandItem
                       key={companyName}

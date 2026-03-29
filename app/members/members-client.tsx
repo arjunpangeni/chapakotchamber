@@ -90,6 +90,9 @@ export default function MembersClient({
     fallbackData
   )
 
+  // Only show loading when there's truly no data available
+  const showLoading = isLoading && !data?.members
+
   useEffect(() => {
     const qsSearch = searchParams.get('search')
     const qsFocus = searchParams.get('focus')
@@ -229,7 +232,7 @@ export default function MembersClient({
           </div>
         </div>
 
-        {isLoading ? (
+        {showLoading ? (
           <div className="text-center py-16">
             <p className="text-foreground/70 text-lg">Loading members...</p>
           </div>

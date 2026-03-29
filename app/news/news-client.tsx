@@ -34,6 +34,9 @@ export default function NewsClient({
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
   const { data, isLoading } = useContentsWithFallback(page, filter, search, fallbackData)
 
+  // Only show loading when there's truly no data available
+  const showLoading = isLoading && !data?.contents
+
   const sortedContents = [...(data?.contents || [])].sort((a: any, b: any) => {
     if (sortBy === 'oldest') return +new Date(a.createdAt) - +new Date(b.createdAt)
     return +new Date(b.createdAt) - +new Date(a.createdAt)
@@ -78,7 +81,7 @@ export default function NewsClient({
         </div>
 
         {/* News List */}
-        {isLoading ? (
+        {showLoading ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Loading news...</p>
           </div>

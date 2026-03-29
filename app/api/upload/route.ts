@@ -7,6 +7,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
+// Supported MIME types for images
+const SUPPORTED_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+]
+
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+
 function sanitizeFolder(input: string | null | undefined) {
   const raw = (input || '').trim()
   if (!raw) return 'chapakot-chamber'
@@ -40,6 +51,22 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    }
+
+    // Validate file type
+    if (!SUPPORTED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: `Unsupported file type: ${file.type}. Supported types: JPEG, PNG, WebP, GIF` },
+        { status: 400 }
+      )
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: `File size exceeds maximum limit of 50MB` },
+        { status: 400 }
+      )
     }
 
     const bytes = await file.arrayBuffer()

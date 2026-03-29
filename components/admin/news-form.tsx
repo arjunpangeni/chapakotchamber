@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
+import { generateNewsSlug } from '@/lib/slug-generator'
 import { useState } from 'react'
 import { AlertCircle, CheckCircle } from 'lucide-react'
 
@@ -41,6 +42,18 @@ export default function NewsForm({ news, onClose }: NewsFormProps) {
       published: true,
     },
   })
+
+  const titleValue = watch('title') || ''
+
+  // Auto-generate slug from title when title changes
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value
+    if (title && !news) {
+      // Only auto-generate for new news, not edits
+      const slug = generateNewsSlug(title)
+      setValue('slug', slug)
+    }
+  }
 
   const onSubmit = async (data: any) => {
     setError(null)
@@ -99,10 +112,12 @@ export default function NewsForm({ news, onClose }: NewsFormProps) {
         </Alert>
       )}
       <div className="space-y-4 sm:space-y-6">
+        {/* Title Section */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground block">News Title</label>
           <Input
             {...register('title')}
+            onChange={handleTitleChange}
             placeholder="News headline"
             className={`h-11 sm:h-10 ${errors.title ? 'border-red-500' : ''}`}
           />
@@ -111,55 +126,53 @@ export default function NewsForm({ news, onClose }: NewsFormProps) {
           )}
         </div>
 
+        {/* Slug Section - Auto-generated, editable */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground block">URL Slug (Auto-generated from title)</label>
+          <Input
+            {...register('slug')}
+            placeholder="url-slug-auto-generated"
+            className="h-11 sm:h-10 font-mono text-sm"
+          />
+          <p className="text-xs text-muted-foreground">Auto-generated from title when creating new news. You can edit this manually if needed.</p>
+        </div>
+
+        {/* Excerpt Section */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground block">Excerpt (Short Summary)</label>
           <Textarea
             {...register('excerpt')}
-            placeholder="Brief summary for preview"
-            rows={3}
-            className={`dark:text-foreground min-h-[60px] sm:min-h-[50px] resize-none`}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Content</label>
-          <Textarea
-            {...register('content')}
-            placeholder="Full news article content"
-            rows={6}
-            className={`dark:text-foreground min-h-[120px] sm:min-h-[100px] resize-none ${errors.content ? 'border-red-500' : ''}`}
-          />
-          {errors.content && (
-            <span className="text-xs text-red-500 mt-1 block">{errors.content.message?.toString()}</span>
-          )}
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-foreground">Excerpt (Short Summary)</label>
-          <Textarea
-            {...register('excerpt')}
-            placeholder="Brief summary for preview"
+            placeholder="Brief summary for preview (shows in news list)"
             rows={2}
-            className="dark:text-foreground"
+            className={`min-h-[60px] resize-none ${errors.excerpt ? 'border-red-500' : ''}`}
           />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-foreground">Content</label>
-          <Textarea
-            {...register('content')}
-            placeholder="Full news article content"
-            rows={6}
-            className={`dark:text-foreground ${errors.content ? 'border-red-500' : ''}`}
-          />
-          {errors.content && (
-            <span className="text-xs text-red-500">{errors.content.message?.toString()}</span>
+          {errors.excerpt && (
+            <span className="text-xs text-red-500 mt-1 block">{errors.excerpt.message?.toString()}</span>
           )}
+          <p className="text-xs text-muted-foreground">100-150 characters recommended</p>
         </div>
 
+        {/* Content Section - Enhanced for better editing */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground block">Full Content</label>
+          <div className="rounded-lg border border-input bg-slate-50 dark:bg-slate-900 p-3">
+            <Textarea
+              {...register('content')}
+              placeholder="Write your full news article here. You can include HTML formatting if needed."
+              rows={8}
+              className={`min-h-[200px] sm:min-h-[240px] resize-none bg-white dark:bg-slate-800 font-mono text-sm ${errors.content ? 'border-red-500' : ''}`}
+            />
+            {errors.content && (
+              <span className="text-xs text-red-500 mt-2 block">{errors.content.message?.toString()}</span>
+            )}
+            <p className="text-xs text-muted-foreground mt-2">💡 Tip: Use &lt;strong&gt;, &lt;em&gt;, or &lt;br&gt; tags for formatting</p>
+          </div>
+        </div>
+
+        {/* Category and Image Grid */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground block">Category</label>
+            <label className="text-sm font-medium text-foreground block">Category (Optional)</label>
             <Input
               {...register('category')}
               placeholder="E.g., Events, Announcements, Press Release"
@@ -168,54 +181,33 @@ export default function NewsForm({ news, onClose }: NewsFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground block">Image URL</label>
+            <label className="text-sm font-medium text-foreground block">Cover Image URL (Optional)</label>
             <Input
               {...register('image')}
-              placeholder="Image URL"
+              placeholder="https://example.com/image.jpg"
               type="url"
               className="h-11 sm:h-10"
             />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground block">Publish</label>
-            <Select value={watch('published') ? 'yes' : 'no'} onValueChange={(value) => setValue('published', value === 'yes')}>
-              <SelectTrigger className="h-11 sm:h-10">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="yes">Publish Immediately</SelectItem>
-                <SelectItem value="no">Keep as Draft</SelectItem>
-              </SelectContent>
-            </Select>
+            <p className="text-xs text-muted-foreground">Leave blank for default image</p>
           </div>
         </div>
 
-          <div>
-            <label className="text-sm font-medium text-foreground">Image URL</label>
-            <Input
-              {...register('image')}
-              placeholder="Image URL"
-              type="url"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-foreground">Publish</label>
+        {/* Publish Status */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground block">Publish Status</label>
           <Select value={watch('published') ? 'yes' : 'no'} onValueChange={(value) => setValue('published', value === 'yes')}>
-            <SelectTrigger>
+            <SelectTrigger className="h-11 sm:h-10">
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="yes">Publish Immediately</SelectItem>
-              <SelectItem value="no">Keep as Draft</SelectItem>
+              <SelectItem value="yes">📢 Publish Immediately</SelectItem>
+              <SelectItem value="no">📝 Keep as Draft</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4">
+      {/* Action Buttons */}
         <Button
           type="button"
           variant="outline"
