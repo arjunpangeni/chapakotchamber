@@ -19,7 +19,7 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>खाता जानकारी</CardTitle>
-          <CardDescription>आपको Admin खाताको विवरण</CardDescription>
+          <CardDescription> Admin खाताको विवरण</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
