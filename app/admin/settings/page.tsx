@@ -9,7 +9,7 @@ export default async function SettingsPage() {
     <div className="p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6 max-w-5xl">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-2">डैशबोर्ड गाइड</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">Dashboard Guide</h1>
         <p className="text-muted-foreground text-sm md:text-base">
           कसरी काम गर्छ — सम्पूर्ण जानकारी
         </p>
