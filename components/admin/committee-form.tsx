@@ -128,16 +128,16 @@ export default function CommitteeForm({ member, onClose, onSuccess }: CommitteeF
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:gap-6">
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-foreground">Name</label>
-          <Input {...register('name')} placeholder="Enter name" className="h-11 sm:h-10" />
+          <label className="block text-sm font-medium text-foreground">Name *</label>
+          <Input {...register('name')} placeholder="Enter full name" className={`h-11 sm:h-10 ${errors.name ? 'border-red-500' : ''}`} />
           {errors.name && (
             <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-foreground">Role</label>
-          <Input {...register('role')} placeholder="Enter role" className="h-11 sm:h-10" />
+          <label className="block text-sm font-medium text-foreground">Role *</label>
+          <Input {...register('role')} placeholder="Enter role (e.g., President, Vice President)" className={`h-11 sm:h-10 ${errors.role ? 'border-red-500' : ''}`} />
           {errors.role && (
             <p className="text-sm text-red-500 mt-1">{errors.role.message}</p>
           )}

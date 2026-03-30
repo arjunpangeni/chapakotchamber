@@ -48,6 +48,7 @@ export default function JobForm({ job, onClose }: JobFormProps) {
       jobType: 'full-time',
       status: 'active',
     },
+    mode: 'onChange',
   })
 
   const companyValue = watch('company') || ''
@@ -66,6 +67,31 @@ export default function JobForm({ job, onClose }: JobFormProps) {
   const onSubmit = async (data: any) => {
     setError(null)
     setSuccess(false)
+    
+    // Validate all required fields before submission
+    const validationErrors: string[] = []
+    
+    if (!data.title?.trim()) {
+      validationErrors.push('Job title is required')
+    }
+    
+    if (!data.company?.trim()) {
+      validationErrors.push('Company is required - please select from the dropdown')
+    }
+    
+    if (!data.description?.trim()) {
+      validationErrors.push('Job description is required')
+    }
+    
+    if (!data.deadline) {
+      validationErrors.push('Deadline is required')
+    }
+    
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join(' | '))
+      return
+    }
+
     setIsSubmitting(true)
     try {
       const url = job ? `/api/jobs/${job._id}` : '/api/jobs'
@@ -76,6 +102,7 @@ export default function JobForm({ job, onClose }: JobFormProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          salary: data.salary?.trim() || 'Negotiable',
           postedBy: data.postedBy || 'admin',
         }),
       })
@@ -121,7 +148,7 @@ export default function JobForm({ job, onClose }: JobFormProps) {
       )}
       <div className="grid grid-cols-1 gap-4 sm:gap-6">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Job Title</label>
+          <label className="text-sm font-medium text-foreground block">Job Title *</label>
           <Input
             {...register('title')}
             placeholder="E.g., Sales Manager"
@@ -130,10 +157,11 @@ export default function JobForm({ job, onClose }: JobFormProps) {
           {errors.title && (
             <span className="text-xs text-red-500 mt-1 block">{errors.title.message?.toString()}</span>
           )}
+          <p className="text-xs text-muted-foreground">Minimum 3 characters required</p>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Company</label>
+          <label className="text-sm font-medium text-foreground block">Company *</label>
           <Popover
             open={companyOpen}
             onOpenChange={(open) => {
@@ -149,10 +177,12 @@ export default function JobForm({ job, onClose }: JobFormProps) {
                 aria-expanded={companyOpen}
                 className={cn(
                   'w-full justify-between font-normal h-11 sm:h-10',
-                  errors.company ? 'border-red-500' : ''
+                  !companyValue && error?.includes('Company') ? 'border-red-500 ring-2 ring-red-200' : errors.company ? 'border-red-500' : ''
                 )}
               >
-                {companyValue || 'Select a company'}
+                <span className={!companyValue ? 'text-muted-foreground' : ''}>
+                  {companyValue || 'Select a company'}
+                </span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
@@ -174,6 +204,7 @@ export default function JobForm({ job, onClose }: JobFormProps) {
                         setValue('company', companyName, { shouldValidate: true })
                         setCompanySearch('')
                         setCompanyOpen(false)
+                        setError(null)
                       }}
                     >
                       <Check
@@ -189,12 +220,16 @@ export default function JobForm({ job, onClose }: JobFormProps) {
               </Command>
             </PopoverContent>
           </Popover>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Shows 5 companies by default. Use search to find others.
+          <p className="text-xs text-muted-foreground">
+            Select a company from the list. Shows 5 companies by default.
           </p>
-          {errors.company && (
-            <span className="text-xs text-red-500">{errors.company.message?.toString()}</span>
+          {!companyValue && error?.includes('Company') && (
+            <span className="text-xs text-red-500 mt-1 block font-semibold">⚠️ {error.split(' | ')[0]}</span>
           )}
+          {errors.company && (
+            <span className="text-xs text-red-500 mt-1 block">{errors.company.message?.toString()}</span>
+          )}
+          <input {...register('company')} type="hidden" />
         </div>
 
         <div className="space-y-2">
@@ -225,13 +260,14 @@ export default function JobForm({ job, onClose }: JobFormProps) {
           <label className="text-sm font-medium text-foreground block">Salary (Optional)</label>
           <Input
             {...register('salary')}
-            placeholder="E.g., Rs. 50,000 - 80,000"
+            placeholder="E.g., Rs. 50,000 - 80,000 (Leave empty for 'Negotiable')"
             className="h-11 sm:h-10"
           />
+          <p className="text-xs text-muted-foreground">If left empty, will default to 'Negotiable'</p>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Deadline</label>
+          <label className="text-sm font-medium text-foreground block">Deadline *</label>
           <Input
             {...register('deadline')}
             type="date"
@@ -240,10 +276,11 @@ export default function JobForm({ job, onClose }: JobFormProps) {
           {errors.deadline && (
             <span className="text-xs text-red-500 mt-1 block">{errors.deadline.message?.toString()}</span>
           )}
+          <p className="text-xs text-muted-foreground">Application deadline is mandatory</p>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Job Description</label>
+          <label className="text-sm font-medium text-foreground block">Job Description *</label>
           <Textarea
             {...register('description')}
             placeholder="Detailed job description, requirements, and benefits"
@@ -253,6 +290,7 @@ export default function JobForm({ job, onClose }: JobFormProps) {
           {errors.description && (
             <span className="text-xs text-red-500 mt-1 block">{errors.description.message?.toString()}</span>
           )}
+          <p className="text-xs text-muted-foreground">Minimum 20 characters. Be detailed - applicants will see the full description in a modal</p>
         </div>
 
         <div className="space-y-2">

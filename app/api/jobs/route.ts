@@ -58,7 +58,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const validated = JobSchema.parse(body)
+    
+    // Default salary to 'Negotiable' if not provided
+    const jobData = {
+      ...body,
+      salary: body.salary?.trim() || 'Negotiable',
+    }
+    
+    const validated = JobSchema.parse(jobData)
 
     const db = await getDatabase()
     const result = await db.collection('jobs').insertOne({

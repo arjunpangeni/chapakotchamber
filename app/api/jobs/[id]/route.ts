@@ -38,7 +38,14 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const validated = JobSchema.partial().parse(body)
+    
+    // Default salary to 'Negotiable' if not provided
+    const jobData = {
+      ...body,
+      salary: body.salary?.trim() || 'Negotiable',
+    }
+    
+    const validated = JobSchema.partial().parse(jobData)
 
     // Ensure immutable fields are not included in $set
     const { _id, ...updateData } = validated

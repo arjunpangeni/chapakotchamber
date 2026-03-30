@@ -37,15 +37,72 @@ async function createIndexes() {
 
     const db = client.db('chapakot-chamber');
     const collections = await db.listCollections().toArray();
-    const contentsExists = collections.some((col) => col.name === 'contents');
+    const collectionNames = collections.map((col) => col.name);
 
-    if (contentsExists) {
-        console.log('Creating text index on "contents" collection...');
-        await db.collection('contents').createIndex({ title: 'text', content: 'text' });
-        console.log('Text index created successfully.');
+    console.log('\n📊 Creating Performance Indexes...\n');
+
+    // Contents collection indexes
+    if (collectionNames.includes('contents')) {
+      console.log('📍 Creating indexes on "contents" collection...');
+      
+      // Index 1: For published + type + sorting by createdAt
+      await db.collection('contents').createIndex(
+        { published: 1, type: 1, createdAt: -1 },
+        { name: 'idx_published_type_created' }
+      );
+      console.log('  ✅ Index 1: published + type + createdAt');
+
+      // Index 2: For type + published queries
+      await db.collection('contents').createIndex(
+        { type: 1, published: 1 },
+        { name: 'idx_type_published' }
+      );
+      console.log('  ✅ Index 2: type + published');
+
+      // Index 3: For pinned items sorting
+      await db.collection('contents').createIndex(
+        { published: 1, isPinned: -1, createdAt: -1 },
+        { name: 'idx_published_pinned_created' }
+      );
+      console.log('  ✅ Index 3: published + isPinned + createdAt');
+
+      // Index 4: Text search index
+      await db.collection('contents').createIndex({
+        title: 'text',
+        content: 'text',
+      });
+      console.log('  ✅ Index 4: Text search (title + content)');
     } else {
-        console.log('"contents" collection does not exist. Skipping index creation.');
+      console.log('⚠️  "contents" collection does not exist. Skipping.');
     }
+
+    // Members collection indexes
+    if (collectionNames.includes('members')) {
+      console.log('\n📍 Creating indexes on "members" collection...');
+      
+      await db.collection('members').createIndex(
+        { membershipStatus: 1 },
+        { name: 'idx_membership_status' }
+      );
+      console.log('  ✅ Index 1: membershipStatus');
+    } else {
+      console.log('\n⚠️  "members" collection does not exist. Skipping.');
+    }
+
+    // Jobs collection indexes
+    if (collectionNames.includes('jobs')) {
+      console.log('\n📍 Creating indexes on "jobs" collection...');
+      
+      await db.collection('jobs').createIndex(
+        { status: 1, createdAt: -1 },
+        { name: 'idx_status_created' }
+      );
+      console.log('  ✅ Index 1: status + createdAt');
+    } else {
+      console.log('\n⚠️  "jobs" collection does not exist. Skipping.');
+    }
+
+    console.log('\n✅ All indexes created successfully!\n');
 
   } finally {
     await client.close();

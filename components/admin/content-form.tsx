@@ -194,15 +194,15 @@ export default function ContentForm({ content, onSave, onClose }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label className="text-foreground">Title</Label>
+        <Label className="text-foreground">Title *</Label>
         <Input value={form.title ?? ''} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
       </div>
       <div>
-        <Label className="text-foreground">Slug</Label>
+        <Label className="text-foreground">Slug *</Label>
         <Input value={form.slug ?? ''} onChange={(e) => setForm({ ...form, slug: e.target.value })} required />
       </div>
       <div>
-        <Label className="text-foreground">Type</Label>
+        <Label className="text-foreground">Type *</Label>
         <Select value={form.type} onValueChange={(value) => setForm({ ...form, type: value })}>
           <SelectTrigger><SelectValue placeholder="Choose type" /></SelectTrigger>
           <SelectContent>

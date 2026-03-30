@@ -5,6 +5,7 @@ import { useJobsWithFallback } from '@/hooks/useApi'
 import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
 import PageIntro from '@/components/public/page-intro'
+import JobDetailsModal from '@/components/public/job-details-modal'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -39,6 +40,8 @@ export default function JobsClient({
   const [search, setSearch] = useState(initialSearch)
   const [jobType, setJobType] = useState(initialJobType)
   const [sortBy, setSortBy] = useState<'newest' | 'deadline'>('newest')
+  const [selectedJob, setSelectedJob] = useState<any>(null)
+  const [modalOpen, setModalOpen] = useState(false)
   
   // Debounce search input for API calls (300ms delay)
   const debouncedSearch = useDebounce(search, 300)
@@ -75,6 +78,11 @@ export default function JobsClient({
     setSearch('')
     setJobType('all')
     setPage(1)
+  }
+
+  const openJobDetails = (job: any) => {
+    setSelectedJob(job)
+    setModalOpen(true)
   }
 
   return (
@@ -159,7 +167,8 @@ export default function JobsClient({
               {jobs.map((job: any) => (
                 <Card
                   key={job._id}
-                  className="border-primary/10 sky-card hover:shadow-xl hover:border-primary/20 transition-all duration-300"
+                  className="border-primary/10 sky-card hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-pointer"
+                  onClick={() => openJobDetails(job)}
                 >
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-start gap-3">
@@ -174,6 +183,7 @@ export default function JobsClient({
                     </div>
 
                     <p className="text-sm text-slate-700 dark:text-slate-200 line-clamp-3">{job.description}</p>
+                    <p className="text-xs text-sky-600 dark:text-sky-400 font-medium hover:underline">Click to view full description →</p>
 
                     <div className="flex flex-wrap gap-2 text-xs font-semibold">
                         <span className="inline-flex items-center rounded-full bg-sky-100 dark:bg-sky-900/50 px-3 py-1 text-sky-700 dark:text-sky-200">
@@ -238,6 +248,8 @@ export default function JobsClient({
                 </Button>
               </div>
             )}
+
+            <JobDetailsModal job={selectedJob} open={modalOpen} onOpenChange={setModalOpen} />
           </>
         ) : (
           <Card className="border-primary/10 sky-card">

@@ -114,7 +114,7 @@ export default function NewsForm({ news, onClose }: NewsFormProps) {
       <div className="space-y-4 sm:space-y-6">
         {/* Title Section */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">News Title</label>
+          <label className="text-sm font-medium text-foreground block">News Title *</label>
           <Input
             {...register('title')}
             onChange={handleTitleChange}
@@ -154,7 +154,7 @@ export default function NewsForm({ news, onClose }: NewsFormProps) {
 
         {/* Content Section - Enhanced for better editing */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Full Content</label>
+          <label className="text-sm font-medium text-foreground block">Full Content *</label>
           <div className="rounded-lg border border-input bg-slate-50 dark:bg-slate-900 p-3">
             <Textarea
               {...register('content')}

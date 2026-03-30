@@ -5,8 +5,12 @@ export const MemberSchema = z.object({
   _id: z.string().optional(),
   businessName: z.string().min(1, 'Business name is required'),
   ownerName: z.string().min(1, 'Owner name is required'),
-  email: z.string().email('Invalid email'),
-  phone: z.string().min(1, 'Phone is required'),
+  email: z.string().min(1, 'Email is required').email('Invalid email address'),
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .regex(/^\d+$/, 'Phone number must contain only digits')
+    .min(10, 'Phone number must be at least 10 digits')
+    .max(10, 'Phone number must not exceed 10 digits'),
   businessType: z.string().min(1, 'Business type is required'),
   address: z.string().min(1, 'Address is required'),
   ward: z.string().min(1, 'Ward is required'),
@@ -24,13 +28,13 @@ export type Member = z.infer<typeof MemberSchema>
 // Job Schema
 export const JobSchema = z.object({
   _id: z.string().optional(),
-  title: z.string().min(1, 'Job title is required'),
+  title: z.string().min(1, 'Job title is required').min(3, 'Job title must be at least 3 characters'),
   company: z.string().min(1, 'Company is required'),
-  description: z.string().min(1, 'Job description is required'),
+  description: z.string().min(1, 'Job description is required').min(20, 'Job description must be at least 20 characters'),
   location: z.string().optional(),
   salary: z.string().optional(),
   jobType: z.enum(['full-time', 'part-time', 'contract', 'temporary']),
-  deadline: z.string(),
+  deadline: z.string().min(1, 'Deadline is required'),
   postedBy: z.string(),
   status: z.enum(['active', 'closed']).default('active'),
   createdAt: z.string().optional(),

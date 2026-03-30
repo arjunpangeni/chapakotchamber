@@ -173,7 +173,8 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
     return {
       url: data.secure_url,
       publicId: data.public_id,
-      blurDataURL: data.blur_data_url || '',
+      // Don't store blurDataURL to avoid MongoDB 16MB document size limit with large albums
+      blurDataURL: '',
     }
   }
 
@@ -228,8 +229,18 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
   }
 
   const onSubmit = async (data: any) => {
-    if (!data.eventName) {
+    if (!data.eventName?.trim()) {
       setError('Event name is required')
+      return
+    }
+
+    if (!data.category?.trim()) {
+      setError('Category is required')
+      return
+    }
+
+    if (images.length === 0) {
+      setError('At least one photo is required')
       return
     }
 
@@ -320,7 +331,7 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">Event Name / Album Title</label>
+          <label className="text-sm font-medium">Event Name / Album Title *</label>
           <Input
             {...register('eventName')}
             onChange={handleEventNameChange}
@@ -330,6 +341,7 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
           {errors.eventName && (
             <span className="text-xs text-red-500">{errors.eventName.message?.toString()}</span>
           )}
+          <p className="text-xs text-muted-foreground mt-1">Required - Album name</p>
         </div>
 
         <div>
@@ -360,8 +372,8 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium">Category</label>
-        <Select value={watch('category') || ''} onValueChange={(value) => setValue('category', value)}>
+        <label className="text-sm font-medium">Category *</label>
+        <Select value={watch('category') || ''} onValueChange={(value) => setValue('category', value, { shouldValidate: true })}>
           <SelectTrigger>
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
@@ -373,16 +385,21 @@ export default function GalleryForm({ item, onClose }: GalleryFormProps) {
             <SelectItem value="Other">Other</SelectItem>
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground mt-1">Required - Select album category</p>
       </div>
 
       <div>
-        <label className="text-sm font-medium">Upload Images</label>
+        <label className="text-sm font-medium">Upload Images *</label>
+        <p className="text-xs text-muted-foreground mb-2">Required - At least 1 photo must be uploaded</p>
         <div
-          className="mt-2 p-4 border border-dashed rounded-md cursor-pointer bg-background/80"
+          className="p-4 border border-dashed rounded-md cursor-pointer bg-background/80 hover:bg-background/90 transition-colors"
           onClick={() => fileInputRef.current?.click()}
         >
           <p className="text-sm text-muted-foreground">Drag and drop images here or click to select multiple files.</p>
           <p className="text-xs text-muted-foreground mt-1">Supported: JPEG, PNG, WebP, GIF (max 50MB each)</p>
+          {images.length > 0 && (
+            <p className="text-xs text-green-600 font-semibold mt-2">✓ {images.length} photo(s) selected</p>
+          )}
           <input
             ref={fileInputRef}
             type="file"

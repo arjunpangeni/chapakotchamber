@@ -116,7 +116,7 @@ export default function MemberForm({ member, onClose }: MemberFormProps) {
       )}
       <div className="grid grid-cols-1 gap-4 sm:gap-6">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Business Name</label>
+          <label className="text-sm font-medium text-foreground block">Business Name *</label>
           <Input
             {...register('businessName')}
             placeholder="Business name"
@@ -128,7 +128,7 @@ export default function MemberForm({ member, onClose }: MemberFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Owner Name</label>
+          <label className="text-sm font-medium text-foreground block">Owner Name *</label>
           <Input
             {...register('ownerName')}
             placeholder="Owner name"
@@ -140,11 +140,11 @@ export default function MemberForm({ member, onClose }: MemberFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Email</label>
+          <label className="text-sm font-medium text-foreground block">Email *</label>
           <Input
             {...register('email')}
             type="email"
-            placeholder="Email"
+            placeholder="Email address"
             className={`h-11 sm:h-10 ${errors.email ? 'border-red-500' : ''}`}
           />
           {errors.email && (
@@ -153,21 +153,32 @@ export default function MemberForm({ member, onClose }: MemberFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Phone</label>
+          <label className="text-sm font-medium text-foreground block">Phone *</label>
           <Input
             {...register('phone')}
-            placeholder="Phone number"
+            type="tel"
+            inputMode="numeric"
+            placeholder="10-digit phone number"
+            maxLength={10}
+            pattern="[0-9]*"
             className={`h-11 sm:h-10 ${errors.phone ? 'border-red-500' : ''}`}
+            onKeyPress={(e) => {
+              // Allow only numeric input
+              if (!/[0-9]/.test(e.key) && e.key !== 'Backspace') {
+                e.preventDefault()
+              }
+            }}
           />
           {errors.phone && (
             <span className="text-xs text-red-500 mt-1 block">{errors.phone.message?.toString()}</span>
           )}
+          <p className="text-xs text-muted-foreground">Must be exactly 10 digits (numbers only)</p>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Business Type</label>
+          <label className="text-sm font-medium text-foreground block">Business Type *</label>
           <Select value={watch('businessType') || ''} onValueChange={(value) => setValue('businessType', value)}>
-            <SelectTrigger className="h-11 sm:h-10">
+            <SelectTrigger className={`h-11 sm:h-10 ${errors.businessType ? 'border-red-500' : ''}`}>
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent>
@@ -184,9 +195,9 @@ export default function MemberForm({ member, onClose }: MemberFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Ward</label>
+          <label className="text-sm font-medium text-foreground block">Ward *</label>
           <Select value={watch('ward') || ''} onValueChange={(value) => setValue('ward', value)}>
-            <SelectTrigger className="h-11 sm:h-10">
+            <SelectTrigger className={`h-11 sm:h-10 ${errors.ward ? 'border-red-500' : ''}`}>
               <SelectValue placeholder="Select ward" />
             </SelectTrigger>
             <SelectContent>
@@ -203,10 +214,10 @@ export default function MemberForm({ member, onClose }: MemberFormProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground block">Address</label>
+          <label className="text-sm font-medium text-foreground block">Address *</label>
           <Input
             {...register('address')}
-            placeholder="Address"
+            placeholder="Business address"
             className={`h-11 sm:h-10 ${errors.address ? 'border-red-500' : ''}`}
           />
           {errors.address && (
