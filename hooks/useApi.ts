@@ -13,10 +13,13 @@ const swrConfig = {
   errorRetryInterval: 3000, // Wait 3 seconds between retries
 }
 
-// For search queries: more aggressive revalidation (1 minute)
+// For search queries: more aggressive revalidation and immediate mount
 const swrConfigSearch = {
   ...swrConfig,
-  dedupingInterval: 60_000, // 1 minute for search queries
+  dedupingInterval: 0, // No deduping for search - always fetch fresh
+  revalidateOnMount: true, // Always fetch on mount if search is active
+  revalidateIfStale: true,
+  keepPreviousData: false,
 }
 
 const fetcher = async (url: string) => {

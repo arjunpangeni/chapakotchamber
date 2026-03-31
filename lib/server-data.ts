@@ -160,7 +160,11 @@ export async function getContentsPage(params: { page: number; type: string; sear
       }
 
       if (search) {
-        filter.$text = { $search: search }
+        filter.$or = filter.$or || []
+        filter.$or.push(
+          { title: { $regex: search, $options: 'i' } },
+          { content: { $regex: search, $options: 'i' } }
+        )
       }
 
       const skip = (page - 1) * CONTENTS_PER_PAGE
@@ -204,14 +208,20 @@ export async function getContentBySlug(slug: string) {
   )()
 }
 
-export async function getGalleryPage(params: { page: number; category: string }) {
-  const { page, category } = params
+export async function getGalleryPage(params: { page: number; category: string; search: string }) {
+  const { page, category, search } = params
 
   return unstable_cache(
     async () => {
       const db = await getDatabase()
       const filter: any = {}
       if (category) filter.category = category
+      if (search) {
+        filter.$or = [
+          { eventName: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+        ]
+      }
 
       const skip = (page - 1) * GALLERY_PER_PAGE
       const [albums, total] = await Promise.all([
@@ -236,7 +246,7 @@ export async function getGalleryPage(params: { page: number; category: string })
         pages: Math.ceil(total / GALLERY_PER_PAGE),
       }
     },
-    [CACHE_TAGS.gallery, String(page), category],
+    [CACHE_TAGS.gallery, String(page), category, search],
     { revalidate: REVALIDATE_SECONDS, tags: [CACHE_TAGS.gallery] }
   )()
 }

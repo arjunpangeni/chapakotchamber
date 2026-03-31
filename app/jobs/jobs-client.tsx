@@ -67,6 +67,15 @@ export default function JobsClient({
     return list.sort((a: any, b: any) => +new Date(b.createdAt) - +new Date(a.createdAt))
   }, [data?.jobs, sortBy])
 
+  const filteredJobs = useMemo(() => {
+    if (!search.trim()) return jobs
+    const term = search.trim().toLowerCase()
+    return jobs.filter((job: any) => {
+      const fields = [job.title, job.company, job.description, job.location, job.salary].join(' ').toLowerCase()
+      return fields.includes(term)
+    })
+  }, [jobs, search])
+
   const iconStylesByType: Record<string, { wrap: string; icon: string }> = {
     'full-time': { wrap: 'from-blue-100 to-cyan-100 dark:from-blue-900/60 dark:to-cyan-900/60', icon: 'text-blue-700 dark:text-cyan-300' },
     'part-time': { wrap: 'from-emerald-100 to-green-100 dark:from-emerald-900/60 dark:to-green-900/60', icon: 'text-emerald-700 dark:text-green-300' },
@@ -164,7 +173,7 @@ export default function JobsClient({
         ) : data?.jobs?.length > 0 ? (
           <>
             <div className="grid gap-4 md:gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {jobs.map((job: any) => (
+              {filteredJobs.map((job: any) => (
                 <Card
                   key={job._id}
                   className="border-primary/10 sky-card hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-pointer"
@@ -182,7 +191,7 @@ export default function JobsClient({
                       </div>
                     </div>
 
-                    <p className="text-sm text-slate-700 dark:text-slate-200 line-clamp-3">{job.description}</p>
+                    <p className="text-sm text-slate-700 dark:text-slate-200 line-clamp-2">{job.description}</p>
                     <p className="text-xs text-sky-600 dark:text-sky-400 font-medium hover:underline">Click to view full description →</p>
 
                     <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -203,19 +212,25 @@ export default function JobsClient({
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-2 border-t border-sky-100 dark:border-slate-700 pt-3">
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                        Contact {memberByName.get(job.company)?.ownerName || job.company} for this job.
+                    <div className="flex flex-col gap-2 border-t border-sky-200 dark:border-slate-700 pt-3 bg-sky-50 dark:bg-slate-900/60 -mx-5 -mb-5 px-5 py-3 rounded-b-lg">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        Contact: {memberByName.get(job.company)?.ownerName || job.company}
                       </p>
-                      <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                      <div className="space-y-1">
                         {memberByName.get(job.company)?.email && (
-                          <div className="flex items-center gap-1">
-                            <Mail className="h-3 w-3 text-cyan-600 dark:text-cyan-300" /> {memberByName.get(job.company)?.email}
+                          <div className="flex items-center gap-2 text-sm">
+                            <Mail className="h-4 w-4 text-cyan-600 dark:text-cyan-400 flex-shrink-0" />
+                            <a href={`mailto:${memberByName.get(job.company)?.email}`} className="text-sky-700 dark:text-sky-300 hover:underline break-all font-medium" onClick={(e) => e.stopPropagation()}>
+                              {memberByName.get(job.company)?.email}
+                            </a>
                           </div>
                         )}
                         {memberByName.get(job.company)?.phone && (
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3 text-emerald-600 dark:text-emerald-300" /> {memberByName.get(job.company)?.phone}
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                            <a href={`tel:${memberByName.get(job.company)?.phone}`} className="text-sky-700 dark:text-sky-300 hover:underline font-medium" onClick={(e) => e.stopPropagation()}>
+                              {memberByName.get(job.company)?.phone}
+                            </a>
                           </div>
                         )}
                       </div>

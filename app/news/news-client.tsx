@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useContentsWithFallback } from '@/hooks/useApi'
 import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
@@ -46,6 +46,15 @@ export default function NewsClient({
     if (sortBy === 'oldest') return +new Date(a.createdAt) - +new Date(b.createdAt)
     return +new Date(b.createdAt) - +new Date(a.createdAt)
   })
+
+  const filteredContents = useMemo(() => {
+    if (!search.trim()) return sortedContents
+    const term = search.trim().toLowerCase()
+    return sortedContents.filter((item: any) => {
+      const fields = [item.title, item.content, item.type, item.authorName].join(' ').toLowerCase()
+      return fields.includes(term)
+    })
+  }, [sortedContents, search])
 
   const labels = [
     { value: 'all', label: 'All' },
@@ -116,7 +125,7 @@ export default function NewsClient({
         ) : data?.contents?.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedContents.map((item: any) => {
+              {filteredContents.map((item: any) => {
                 const expired = item.expiresAt && new Date(item.expiresAt) < new Date()
                 return (
                   <Link

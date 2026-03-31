@@ -2,7 +2,7 @@
 import { auth } from '@/auth'
 import { getActiveJobsCount, getContentsPage } from '@/lib/server-data'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 type SearchParams = {
   page?: string

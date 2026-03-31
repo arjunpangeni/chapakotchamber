@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState,useMemo } from 'react'
 import { useGalleryWithFallback } from '@/hooks/useApi'
 import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
@@ -40,6 +40,16 @@ export default function GalleryClient({
 
   // Only show loading when there's truly no data available
   const showLoading = isLoading && !data?.albums
+
+  const filteredAlbums = useMemo(() => {
+    const list = [...(data?.albums || [])]
+    if (!search.trim()) return list
+    const term = search.trim().toLowerCase()
+    return list.filter((album: any) => {
+      const fields = [album.eventName, album.description, album.category, album.eventSlug].join(' ').toLowerCase()
+      return fields.includes(term)
+    })
+  }, [data?.albums, search])
 
   return (
     <div className="min-h-screen public-sky">
@@ -121,7 +131,7 @@ export default function GalleryClient({
         ) : data?.albums?.length > 0 ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {data.albums.map((album: any) => (
+              {filteredAlbums.map((album: any) => (
                 <Link key={album._id} href={`/gallery/${album.eventSlug}`} className="group block h-full">
                   <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-primary/10 sky-card h-full flex flex-col">
                     <div className="relative h-56 bg-gradient-to-br from-primary/10 to-accent/10 overflow-hidden">

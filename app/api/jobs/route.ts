@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
 
     // Filter out expired jobs unless explicitly requested (for admin)
     if (!includeExpired) {
-      const now = new Date()
-      filter.deadline = { $gte: now.toISOString() }
+      const now = new Date().toISOString()
+      filter.deadline = { $gte: now }
     }
 
     if (search) {

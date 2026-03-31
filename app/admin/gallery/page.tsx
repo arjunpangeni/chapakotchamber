@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGallery } from '@/hooks/useApi'
+import { useDebounce } from '@/hooks/useDebounce'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2, Edit, Eye } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Plus, Trash2, Edit, Eye, Search } from 'lucide-react'
 import GalleryForm from '@/components/admin/gallery-form'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import DeleteConfirmDialog from '@/components/admin/delete-confirm-dialog'
@@ -16,11 +18,16 @@ export default function GalleryPage() {
   const router = useRouter()
   const [page, setPage] = useState(1)
   const [category, setCategory] = useState('')
+  const [search, setSearch] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [selectedAlbum, setSelectedAlbum] = useState<any>(null)
   const [albumToDelete, setAlbumToDelete] = useState<any>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const { data, mutate, isLoading } = useGallery(page, category)
+  
+  // Import useDebounce if not already imported
+  const debouncedSearch = useDebounce(search, 300)
+  
+  const { data, mutate, isLoading } = useGallery(page, category, debouncedSearch)
 
   const handleAddNew = () => {
     setSelectedAlbum(null)
@@ -71,10 +78,24 @@ export default function GalleryPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Filter by Category</CardTitle>
+          <CardTitle>Search & Filter</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 flex-wrap">
+        <CardContent className="space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search by event name or description..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
+              className="pl-10"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-2">Filter by Category</label>
+            <div className="flex gap-2 flex-wrap">
             <Button
               size="sm"
               variant={category === '' ? 'default' : 'outline'}
@@ -99,8 +120,7 @@ export default function GalleryPage() {
                 {cat}
               </Button>
             ))}
-          </div>
-        </CardContent>
+          </div>          </div>        </CardContent>
       </Card>
 
       {isLoading ? (
