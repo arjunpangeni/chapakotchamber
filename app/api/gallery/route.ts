@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
     const category = searchParams.get('category') || ''
+    const search = searchParams.get('search') || ''
     const eventSlug = searchParams.get('slug') || ''
 
     const db = await getDatabase()
@@ -19,6 +20,13 @@ export async function GET(request: NextRequest) {
 
     if (category) filter.category = category
     if (eventSlug) filter.eventSlug = eventSlug
+
+    if (search) {
+      filter.$or = [
+        { eventName: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+      ]
+    }
 
     if (eventSlug) {
       const album = await db

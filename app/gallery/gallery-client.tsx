@@ -6,27 +6,37 @@ import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
 import PageIntro from '@/components/public/page-intro'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import cloudinaryLoader from '@/lib/cloudinary-loader'
+import { Search, SlidersHorizontal } from 'lucide-react'
+import { useDebounce } from '@/hooks/useDebounce'
 
 export default function GalleryClient({
   initialPage = 1,
   initialCategory = '',
+  initialSearch = '',
   fallbackData,
   session,
   activeJobsCount = 0,
 }: {
   initialPage?: number
   initialCategory?: string
+  initialSearch?: string
   fallbackData?: any
   session?: any
   activeJobsCount?: number
 }) {
   const [page, setPage] = useState(initialPage)
   const [category, setCategory] = useState(initialCategory)
-  const { data, isLoading } = useGalleryWithFallback(page, category, fallbackData)
+  const [search, setSearch] = useState(initialSearch)
+  
+  // Debounce search input for API calls (300ms delay)
+  const debouncedSearch = useDebounce(search, 300)
+  
+  const { data, isLoading } = useGalleryWithFallback(page, category, debouncedSearch, fallbackData)
 
   // Only show loading when there's truly no data available
   const showLoading = isLoading && !data?.albums
@@ -42,29 +52,55 @@ export default function GalleryClient({
           eyebrow="Media"
         />
 
-        {/* Category Filter */}
-        <div className="card-modern border border-primary/10 p-4 rounded-2xl">
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Categories:</span>
-            <Button
-              variant={category === '' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setCategory('')}
-              className="h-7 px-3 text-xs"
-            >
-              All
-            </Button>
-            {['Events', 'Meetings', 'Awards', 'Training', 'Other'].map((cat) => (
+        {/* Search and Filter */}
+        <div className="card-modern border border-primary/10 p-4 rounded-2xl space-y-4">
+          {/* Search */}
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300 mb-2">
+              <Search className="h-4 w-4" />
+              Search
+            </div>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sky-600/70" />
+              <Input
+                placeholder="Search albums..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setPage(1)
+                }}
+                className="h-8 pl-9 text-sm"
+              />
+            </div>
+          </div>
+
+          {/* Category Filter */}
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300 mb-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              Categories
+            </div>
+            <div className="flex flex-wrap gap-2">
               <Button
-                key={cat}
-                variant={category === cat ? 'default' : 'outline'}
+                variant={category === '' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setCategory(cat)}
+                onClick={() => { setCategory(''); setPage(1); }}
                 className="h-7 px-3 text-xs"
               >
-                {cat}
+                All
               </Button>
-            ))}
+              {['Events', 'Meetings', 'Awards', 'Training', 'Other'].map((cat) => (
+                <Button
+                  key={cat}
+                  variant={category === cat ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => { setCategory(cat); setPage(1); }}
+                  className="h-7 px-3 text-xs"
+                >
+                  {cat}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 

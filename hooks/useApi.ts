@@ -233,13 +233,14 @@ export function useNewsItem(id: string) {
   return { data, error, isLoading, mutate }
 }
 
-export function useGallery(page = 1, category = '') {
+export function useGallery(page = 1, category = '', search = '') {
   const params = new URLSearchParams()
   params.append('page', page.toString())
   if (category) params.append('category', category)
+  if (search) params.append('search', search)
 
-  // Use search config if there's an active category filter
-  const config = category ? swrConfigSearch : swrConfig
+  // Use search config if there's an active category filter or search
+  const config = category || search ? swrConfigSearch : swrConfig
 
   const { data, error, isLoading, mutate } = useSWR(
     `/api/gallery?${params.toString()}`,
@@ -250,13 +251,14 @@ export function useGallery(page = 1, category = '') {
   return { data, error, isLoading, mutate }
 }
 
-export function useGalleryWithFallback(page = 1, category = '', fallbackData?: any) {
+export function useGalleryWithFallback(page = 1, category = '', search = '', fallbackData?: any) {
   const params = new URLSearchParams()
   params.append('page', page.toString())
   if (category) params.append('category', category)
+  if (search) params.append('search', search)
 
-  // Use search config if there's an active category filter
-  const config = category ? swrConfigSearch : swrConfig
+  // Use search config if there's an active category filter or search
+  const config = category || search ? swrConfigSearch : swrConfig
 
   const { data, error, isLoading, mutate } = useSWR(
     `/api/gallery?${params.toString()}`,

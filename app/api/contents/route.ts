@@ -31,7 +31,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      filter.$text = { $search: search }
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+      ]
     }
 
     if (slug) {

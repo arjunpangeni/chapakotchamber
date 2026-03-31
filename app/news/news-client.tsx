@@ -12,6 +12,7 @@ import { Calendar, Search, SlidersHorizontal, User } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import cloudinaryLoader from '@/lib/cloudinary-loader'
+import { useDebounce } from '@/hooks/useDebounce'
 
 export default function NewsClient({
   initialPage = 1,
@@ -32,7 +33,11 @@ export default function NewsClient({
   const [filter, setFilter] = useState<'all' | 'news' | 'notice' | 'article'>(initialFilter)
   const [search, setSearch] = useState(initialSearch)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest')
-  const { data, isLoading } = useContentsWithFallback(page, filter, search, fallbackData)
+  
+  // Debounce search input for API calls (300ms delay)
+  const debouncedSearch = useDebounce(search, 300)
+  
+  const { data, isLoading } = useContentsWithFallback(page, filter, debouncedSearch, fallbackData)
 
   // Only show loading when there's truly no data available
   const showLoading = isLoading && !data?.contents
@@ -60,23 +65,46 @@ export default function NewsClient({
           eyebrow="Updates"
         />
 
-        <div className="card-modern sky-card p-3 md:p-4 border-2 border-primary/10 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">
-            <SlidersHorizontal className="h-4 w-4" />
-            Filter by Type
+        <div className="card-modern sky-card p-3 md:p-4 border-2 border-primary/10 space-y-4">
+          {/* Search */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300">
+              <Search className="h-4 w-4" />
+              Search
+            </div>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-sky-600/70" />
+              <Input
+                placeholder="Search news..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value)
+                  setPage(1)
+                }}
+                className="h-8 pl-9 text-sm"
+              />
+            </div>
           </div>
-          <div className="flex overflow-x-auto gap-2 pb-1">
-            {labels.map((tab) => (
-              <Button
-                key={tab.value}
-                variant={filter === tab.value ? 'default' : 'outline'}
-                size="sm"
-                className={`h-7 px-3 text-xs ${filter === tab.value ? 'bg-sky-500 text-white' : 'border-sky-300 text-sky-800 hover:bg-sky-50 dark:border-sky-700 dark:text-sky-200 dark:hover:bg-slate-800'}`}
-                onClick={() => { setFilter(tab.value); setPage(1); }}
-              >
-                {tab.label}
-              </Button>
-            ))}
+
+          {/* Filter by Type */}
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300 mb-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filter by Type
+            </div>
+            <div className="flex overflow-x-auto gap-2 pb-1">
+              {labels.map((tab) => (
+                <Button
+                  key={tab.value}
+                  variant={filter === tab.value ? 'default' : 'outline'}
+                  size="sm"
+                  className={`h-7 px-3 text-xs ${filter === tab.value ? 'bg-sky-500 text-white' : 'border-sky-300 text-sky-800 hover:bg-sky-50 dark:border-sky-700 dark:text-sky-200 dark:hover:bg-slate-800'}`}
+                  onClick={() => { setFilter(tab.value); setPage(1); }}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
