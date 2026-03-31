@@ -102,11 +102,12 @@ export function useMember(id: string) {
   return { data, error, isLoading, mutate }
 }
 
-export function useJobs(page = 1, search = '', jobType = 'all') {
+export function useJobs(page = 1, search = '', jobType = 'all', includeExpired = false) {
   const params = new URLSearchParams()
   params.append('page', page.toString())
   if (search) params.append('search', search)
   if (jobType && jobType !== 'all') params.append('jobType', jobType)
+  if (includeExpired) params.append('includeExpired', 'true')
 
   // Use search config if there's an active search filter
   const config = search || jobType !== 'all' ? swrConfigSearch : swrConfig
@@ -120,11 +121,12 @@ export function useJobs(page = 1, search = '', jobType = 'all') {
   return { data, error, isLoading, mutate }
 }
 
-export function useJobsWithFallback(page = 1, search = '', jobType = 'all', fallbackData?: any) {
+export function useJobsWithFallback(page = 1, search = '', jobType = 'all', fallbackData?: any, includeExpired = false) {
   const params = new URLSearchParams()
   params.append('page', page.toString())
   if (search) params.append('search', search)
   if (jobType && jobType !== 'all') params.append('jobType', jobType)
+  if (includeExpired) params.append('includeExpired', 'true')
 
   // Use search config if there's an active search filter
   const config = search || jobType !== 'all' ? swrConfigSearch : swrConfig

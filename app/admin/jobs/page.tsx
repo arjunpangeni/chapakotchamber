@@ -30,7 +30,7 @@ export default function JobsPage() {
   // Debounce search input for API calls (300ms delay)
   const debouncedSearch = useDebounce(search, 300)
   
-  const { data, mutate, isLoading } = useJobs(page, debouncedSearch)
+  const { data, mutate, isLoading } = useJobs(page, debouncedSearch, 'all', true)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -130,6 +130,11 @@ export default function JobsPage() {
                       <span className={`rounded px-2 py-1 ${job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                         {job.status}
                       </span>
+                      {job.isExpired && (
+                        <span className="rounded bg-red-100 px-2 py-1 text-red-800 font-medium">
+                          Expired
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -158,6 +163,7 @@ export default function JobsPage() {
                   <TableHead className="min-w-[100px]">Type</TableHead>
                   <TableHead className="min-w-[130px]">Deadline</TableHead>
                   <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[80px]">Expired</TableHead>
                   <TableHead className="text-right min-w-[80px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -189,6 +195,13 @@ export default function JobsPage() {
                         >
                           {job.status}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        {job.isExpired && (
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Expired
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">

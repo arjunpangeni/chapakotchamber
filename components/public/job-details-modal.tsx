@@ -37,6 +37,11 @@ export default function JobDetailsModal({ job, open, onOpenChange }: JobDetailsM
               <Briefcase className="w-4 h-4" />
               {job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1)}
             </span>
+            {job.isExpired && (
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-semibold text-sm bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200">
+                Expired
+              </span>
+            )}
           </div>
 
           {/* Key Details Grid */}

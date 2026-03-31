@@ -13,9 +13,16 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const search = searchParams.get('search') || ''
     const jobType = searchParams.get('jobType') || ''
+    const includeExpired = searchParams.get('includeExpired') === 'true'
 
     const db = await getDatabase()
     const filter: any = { status: 'active' }
+
+    // Filter out expired jobs unless explicitly requested (for admin)
+    if (!includeExpired) {
+      const now = new Date()
+      filter.deadline = { $gte: now.toISOString() }
+    }
 
     if (search) {
       filter.$or = [
@@ -44,6 +51,7 @@ export async function GET(request: NextRequest) {
       jobs: jobs.map((j) => ({
         ...j,
         _id: j._id?.toString(),
+        isExpired: new Date(j.deadline) < new Date(),
       })),
       total,
       page,
