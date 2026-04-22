@@ -1,5 +1,4 @@
-﻿import { auth } from '@/auth'
-import { getActiveJobsCount, getGalleryBySlug } from '@/lib/server-data'
+import { getGalleryBySlug } from '@/lib/server-data'
 import AlbumClient from './album-client'
 
 export const revalidate = 3600
@@ -10,18 +9,7 @@ export default async function AlbumPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const album = await getGalleryBySlug(slug)
 
-  const [album, session, activeJobsCount] = await Promise.all([
-    getGalleryBySlug(slug),
-    auth(),
-    getActiveJobsCount(),
-  ])
-
-  return (
-    <AlbumClient
-      initialAlbum={album}
-      session={session}
-      activeJobsCount={activeJobsCount}
-    />
-  )
+  return <AlbumClient initialAlbum={album} />
 }

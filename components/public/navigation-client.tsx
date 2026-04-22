@@ -53,14 +53,20 @@ function JobsNotification({ count }: { count: number }) {
 }
 
 export default function NavigationClient({
+  session: initialSession,
   activeJobsCount = 0,
 }: {
+  session?: NavigationSession
   activeJobsCount?: number
 }) {
-  const { data: session } = useSession()
+  const { data: clientSession } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const drawerRef = useRef<HTMLDivElement | null>(null)
   const pathname = usePathname()
+  const session =
+    initialSession !== undefined
+      ? initialSession
+      : ((clientSession as NavigationSession | undefined) ?? null)
 
   useEffect(() => {
     setMobileOpen(false)

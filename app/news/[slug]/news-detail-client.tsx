@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
 import { Button } from '@/components/ui/button'
 import { Eye } from 'lucide-react'
@@ -11,16 +10,12 @@ import cloudinaryLoader from '@/lib/cloudinary-loader'
 
 export default function NewsDetailClient({
   initialContent,
-  session,
-  activeJobsCount = 0,
 }: {
   initialContent: any | null
-  session?: any
-  activeJobsCount?: number
 }) {
   const [content] = useState<any>(initialContent)
 
-  if (!content) return <div className="min-h-screen bg-[#f4f5f7] dark:bg-slate-950"><NavigationClient session={session ?? null} activeJobsCount={activeJobsCount} /><main className="mx-auto max-w-4xl px-4 py-12">Not found</main><Footer /></div>
+  if (!content) return <div className="min-h-screen bg-[#f4f5f7] dark:bg-slate-950"><main className="mx-auto max-w-4xl px-4 py-12">Not found</main><Footer /></div>
 
   // Strip any script tags to avoid React script warnings and improve safety
   const safeHtml = (content.content || '').replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
@@ -29,7 +24,6 @@ export default function NewsDetailClient({
 
   return (
     <div className="min-h-screen bg-[#f4f5f7] dark:bg-slate-950">
-      <NavigationClient session={session ?? null} activeJobsCount={activeJobsCount} />
       <main className="news-font mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div className="mb-3">
           <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${baseBadge}`}>{content.type.toUpperCase()}</span>
@@ -76,4 +70,3 @@ export default function NewsDetailClient({
     </div>
   )
 }
-

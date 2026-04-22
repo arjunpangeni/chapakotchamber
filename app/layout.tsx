@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Noto_Sans_Devanagari } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Providers } from '@/components/providers'
-import NavigationClient from '@/components/public/navigation-client'
+import Navigation from '@/components/public/navigation'
 import './globals.css'
 
 const noto = Noto_Sans_Devanagari({
@@ -42,7 +42,7 @@ export default function RootLayout({
       <body className={`${noto.className} font-sans antialiased site-sky-bg`}>
         <Providers>
           {/* Navigation is outside Suspense boundary - stays fixed during page transitions */}
-          <NavigationClient />
+          <Navigation />
           {children}
           <Analytics />
         </Providers>

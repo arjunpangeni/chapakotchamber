@@ -3,21 +3,15 @@
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import cloudinaryLoader from '@/lib/cloudinary-loader'
 
 export default function AlbumClient({
   initialAlbum,
-  session,
-  activeJobsCount = 0,
 }: {
   initialAlbum: any | null
-  session?: any
-  activeJobsCount?: number
 }) {
   const router = useRouter()
   const [album] = useState<any>(initialAlbum)
@@ -88,7 +82,6 @@ export default function AlbumClient({
   if (!album) {
     return (
       <div className="min-h-screen public-sky">
-        <NavigationClient session={session ?? null} activeJobsCount={activeJobsCount} />
         <main className="max-w-6xl mx-auto px-4 py-12 text-center">Album not found</main>
         <Footer />
       </div>
@@ -97,7 +90,6 @@ export default function AlbumClient({
 
   return (
     <div className="min-h-screen public-sky">
-      <NavigationClient session={session ?? null} activeJobsCount={activeJobsCount} />
       <main className="max-w-6xl mx-auto px-4 py-12 space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
