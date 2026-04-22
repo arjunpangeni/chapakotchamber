@@ -1,5 +1,4 @@
 ﻿import MembersClient from './members-client'
-import { auth } from '@/auth'
 import { getActiveJobsCount, getMembersPage } from '@/lib/server-data'
 
 export const revalidate = 60
@@ -22,14 +21,13 @@ export default async function MembersPage({
   const businessType = (params.businessType || 'all').trim() || 'all'
   const ward = (params.ward || 'all').trim() || 'all'
 
-  const [data, session, activeJobsCount] = await Promise.all([
+  const [data, activeJobsCount] = await Promise.all([
     getMembersPage({
       page,
       search,
       businessType: businessType === 'all' ? '' : businessType,
       ward: ward === 'all' ? '' : ward,
     }),
-    auth(),
     getActiveJobsCount(),
   ])
 
@@ -40,7 +38,6 @@ export default async function MembersPage({
       initialBusinessType={businessType}
       initialWard={ward}
       fallbackData={data}
-      session={session}
       activeJobsCount={activeJobsCount}
     />
   )

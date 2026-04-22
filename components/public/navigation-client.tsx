@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
@@ -53,12 +53,11 @@ function JobsNotification({ count }: { count: number }) {
 }
 
 export default function NavigationClient({
-  session,
   activeJobsCount = 0,
 }: {
-  session: NavigationSession
   activeJobsCount?: number
 }) {
+  const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
   const drawerRef = useRef<HTMLDivElement | null>(null)
   const pathname = usePathname()

@@ -1,7 +1,6 @@
 ﻿import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import Navigation from '@/components/public/navigation'
 import Footer from '@/components/public/footer'
 import { ArrowRight, BellRing, CalendarDays, FileText, Newspaper, Users, Briefcase, Star, TrendingUp, Shield } from 'lucide-react'
 import { getHomePageContent, getCommitteeMembers } from '@/lib/server-data'
@@ -33,8 +32,6 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen public-sky">
-      <Navigation />
-
       <main className="mx-auto max-w-7xl px-3 sm:px-4 py-6 sm:py-10 md:py-14 space-y-6 sm:space-y-8 md:space-y-10">
         {/* Modern Hero Section */}
         <section className="relative overflow-hidden rounded-3xl border border-sky-200/70 bg-gradient-to-br from-white via-sky-50 to-blue-100 dark:border-sky-900/50 dark:from-slate-950 dark:via-slate-900 dark:to-sky-950">

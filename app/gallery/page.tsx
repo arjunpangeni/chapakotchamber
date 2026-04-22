@@ -1,5 +1,4 @@
 ﻿import GalleryClient from './gallery-client'
-import { auth } from '@/auth'
 import { getActiveJobsCount, getGalleryPage } from '@/lib/server-data'
 
 export const revalidate = 60
@@ -20,9 +19,8 @@ export default async function GalleryPage({
   const category = (params.category || '').trim()
   const search = (params.search || '').trim()
 
-  const [data, session, activeJobsCount] = await Promise.all([
+  const [data, activeJobsCount] = await Promise.all([
     getGalleryPage({ page, category, search }),
-    auth(),
     getActiveJobsCount(),
   ])
 
@@ -32,7 +30,6 @@ export default async function GalleryPage({
       initialCategory={category}
       initialSearch={search}
       fallbackData={data}
-      session={session}
       activeJobsCount={activeJobsCount}
     />
   )

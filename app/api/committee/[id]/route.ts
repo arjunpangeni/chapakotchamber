@@ -58,7 +58,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Committee member not found' }, { status: 404 })
     }
 
-    revalidateTag(CACHE_TAGS.committee)
+    revalidateTag(CACHE_TAGS.committee, 'max')
 
     return NextResponse.json({ message: 'Committee member updated successfully' })
   } catch (error: any) {
@@ -86,7 +86,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Committee member not found' }, { status: 404 })
     }
 
-    revalidateTag(CACHE_TAGS.committee)
+    revalidateTag(CACHE_TAGS.committee, 'max')
 
     return NextResponse.json({ message: 'Committee member deleted successfully' })
   } catch (error) {

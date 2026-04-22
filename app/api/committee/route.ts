@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date().toISOString(),
     })
 
-    revalidateTag(CACHE_TAGS.committee)
+    revalidateTag(CACHE_TAGS.committee, 'max')
 
     return NextResponse.json(
       { _id: result.insertedId.toString(), ...validated },

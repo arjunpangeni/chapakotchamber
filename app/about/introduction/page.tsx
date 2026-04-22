@@ -1,11 +1,8 @@
-import Navigation from '@/components/public/navigation'
 import Footer from '@/components/public/footer'
 
 export default function AboutIntroductionPage() {
   return (
     <div className="min-h-screen bg-[#f4f5f7] dark:bg-slate-950">
-      <Navigation />
-
       <main className="news-font mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div className="mb-3">
           <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">

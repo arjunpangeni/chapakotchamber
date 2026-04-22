@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useMembersWithFallback } from '@/hooks/useApi'
 import { useSearchParams } from 'next/navigation'
-import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
 import PageIntro from '@/components/public/page-intro'
 import { Input } from '@/components/ui/input'
@@ -61,7 +60,6 @@ export default function MembersClient({
   initialBusinessType = 'all',
   initialWard = 'all',
   fallbackData,
-  session,
   activeJobsCount = 0,
 }: {
   initialPage?: number
@@ -69,7 +67,6 @@ export default function MembersClient({
   initialBusinessType?: string
   initialWard?: string
   fallbackData?: any
-  session?: any
   activeJobsCount?: number
 }) {
   const [page, setPage] = useState(initialPage)
@@ -158,8 +155,6 @@ export default function MembersClient({
 
   return (
     <div className="min-h-screen public-sky">
-      <NavigationClient session={session ?? null} activeJobsCount={activeJobsCount} />
-
       <main className="max-w-6xl mx-auto px-3 sm:px-4 py-8 sm:py-12 space-y-8 sm:space-y-10">
         <PageIntro
           title="Member Directory"

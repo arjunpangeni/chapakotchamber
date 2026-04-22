@@ -1,5 +1,4 @@
 ﻿import JobsClient from './jobs-client'
-import { auth } from '@/auth'
 import { getActiveJobsCount, getJobsPage, getMembersAll } from '@/lib/server-data'
 
 export const revalidate = 60
@@ -20,10 +19,9 @@ export default async function JobsPage({
   const search = (params.search || '').trim()
   const jobType = (params.jobType || 'all').trim() || 'all'
 
-  const [jobsData, membersAll, session, activeJobsCount] = await Promise.all([
+  const [jobsData, membersAll, activeJobsCount] = await Promise.all([
     getJobsPage({ page, search, jobType: jobType === 'all' ? '' : jobType }),
     getMembersAll(),
-    auth(),
     getActiveJobsCount(),
   ])
 
@@ -34,7 +32,6 @@ export default async function JobsPage({
       initialJobType={jobType}
       fallbackData={jobsData}
       membersAll={membersAll}
-      session={session}
       activeJobsCount={activeJobsCount}
     />
   )

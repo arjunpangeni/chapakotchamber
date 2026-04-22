@@ -1,7 +1,6 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import Sidebar from '@/components/admin/sidebar'
-import Header from '@/components/admin/header'
 
 export const metadata = {
   title: 'चापाकोट उद्योग वाणिज्य संघ - Admin Dashboard',
@@ -26,7 +25,6 @@ export default async function AdminLayout({
         <Sidebar />
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
         <main className="flex-1 overflow-auto bg-transparent p-4 md:p-6">
           {children}
         </main>

@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import Navigation from '@/components/public/navigation'
 import Footer from '@/components/public/footer'
 import PageIntro from '@/components/public/page-intro'
 import { getCommitteeMembers } from '@/lib/server-data'
@@ -9,8 +8,6 @@ export default async function CommitteePage() {
 
   return (
     <div className="min-h-screen public-sky">
-      <Navigation />
-
       <main className="max-w-6xl mx-auto px-4 py-12 md:py-16 lg:py-20">
         <PageIntro
           title="Executive Committee"

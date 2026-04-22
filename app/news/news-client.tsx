@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react'
 import { useContentsWithFallback } from '@/hooks/useApi'
-import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
 import PageIntro from '@/components/public/page-intro'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,14 +18,12 @@ export default function NewsClient({
   initialFilter = 'all',
   initialSearch = '',
   fallbackData,
-  session,
   activeJobsCount = 0,
 }: {
   initialPage?: number
   initialFilter?: 'all' | 'news' | 'notice' | 'article'
   initialSearch?: string
   fallbackData?: any
-  session?: any
   activeJobsCount?: number
 }) {
   const [page, setPage] = useState(initialPage)
@@ -65,8 +62,6 @@ export default function NewsClient({
 
   return (
     <div className="min-h-screen bg-[#f4f5f7] dark:bg-slate-950">
-      <NavigationClient session={session ?? null} activeJobsCount={activeJobsCount} />
-
       <main className="news-font max-w-7xl mx-auto px-3 sm:px-4 py-8 sm:py-12 space-y-6 sm:space-y-8">
         <PageIntro
           title="News & Updates"

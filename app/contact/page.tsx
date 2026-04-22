@@ -1,4 +1,3 @@
-import Navigation from '@/components/public/navigation'
 import Footer from '@/components/public/footer'
 import PageIntro from '@/components/public/page-intro'
 import Link from 'next/link'
@@ -8,8 +7,6 @@ import DirectionsButton from '@/components/public/directions-button'
 export default function ContactPage() {
   return (
     <div className="min-h-screen public-sky">
-      <Navigation />
-
       <main className="max-w-6xl mx-auto px-4 py-12 md:py-16 lg:py-20 space-y-10 md:space-y-12">
         <PageIntro
           title="सदस्यता जानकारी"

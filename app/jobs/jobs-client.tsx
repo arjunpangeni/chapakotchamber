@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react'
 import { useJobsWithFallback } from '@/hooks/useApi'
-import NavigationClient from '@/components/public/navigation-client'
 import Footer from '@/components/public/footer'
 import PageIntro from '@/components/public/page-intro'
 import JobDetailsModal from '@/components/public/job-details-modal'
@@ -25,7 +24,6 @@ export default function JobsClient({
   initialJobType = 'all',
   fallbackData,
   membersAll,
-  session,
   activeJobsCount = 0,
 }: {
   initialPage?: number
@@ -33,7 +31,6 @@ export default function JobsClient({
   initialJobType?: string
   fallbackData?: any
   membersAll?: any
-  session?: any
   activeJobsCount?: number
 }) {
   const [page, setPage] = useState(initialPage)
@@ -96,8 +93,6 @@ export default function JobsClient({
 
   return (
     <div className="min-h-screen public-sky">
-      <NavigationClient session={session ?? null} activeJobsCount={activeJobsCount} />
-
       <main className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16 space-y-8 sm:space-y-10">
         <PageIntro
           title="Job Listings"
