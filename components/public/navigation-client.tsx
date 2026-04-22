@@ -114,10 +114,10 @@ export default function NavigationClient({
 
   return (
     <nav className="sticky top-0 z-50 border-b border-white/20 bg-white/55 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/55 dark:shadow-[0_10px_30px_rgba(2,6,23,0.55)]">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-2.5 py-2 sm:gap-3 sm:px-4 sm:py-2.5 md:px-6">
         <Link
           href="/"
-          className="hover:opacity-95 transition-opacity flex-shrink-0 inline-flex items-center gap-2 sm:gap-3 min-w-0"
+          className="inline-flex min-w-0 flex-shrink items-center gap-1.5 transition-opacity hover:opacity-95 sm:gap-3"
           aria-label="चापाकोट उद्योग वाणिज्य संघ"
         >
           <Image
@@ -126,9 +126,9 @@ export default function NavigationClient({
             width={220}
             height={68}
             priority
-            className="h-8 sm:h-9 md:h-10 lg:h-11 w-auto dark:invert shrink-0"
+            className="h-7 w-auto shrink-0 dark:invert min-[380px]:h-8 sm:h-9 md:h-10 lg:h-11"
           />
-          <span className="block text-xs sm:text-sm md:text-base font-semibold leading-tight text-slate-800 dark:text-slate-100 max-w-[120px] sm:max-w-[140px] md:max-w-none">
+          <span className="hidden max-w-[108px] min-w-0 text-[11px] font-semibold leading-tight text-slate-800 dark:text-slate-100 min-[360px]:block min-[380px]:text-xs sm:max-w-[140px] sm:text-sm md:max-w-none md:text-base">
             चापाकोट उद्योग वाणिज्य संघ
           </span>
         </Link>
@@ -155,7 +155,7 @@ export default function NavigationClient({
             </Link>
           ))}
 
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button
                 className={`flex items-center gap-2 text-sm md:text-base font-semibold transition-all duration-300 relative group ${
@@ -172,7 +172,7 @@ export default function NavigationClient({
                 }`} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="glass border-border/40">
+            <DropdownMenuContent align="center" className="glass border-border/40">
               {aboutLinks.map((item) => (
                 <DropdownMenuItem key={item.href} className={`cursor-pointer transition-colors ${isActive(item.href) ? 'bg-primary/10 text-primary' : ''}`}>
                   <Link href={item.href} className="w-full">{item.label}</Link>
@@ -196,7 +196,7 @@ export default function NavigationClient({
           </Link>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
+        <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2 md:gap-3">
           <ThemeToggle />
 
           {session ? (
@@ -208,9 +208,9 @@ export default function NavigationClient({
                   </button>
                 </Link>
               )}
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
-                  <Button className="btn-modern gap-2 bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-4">
+                  <Button className="btn-modern h-9 gap-2 bg-primary px-3 text-sm text-primary-foreground hover:bg-primary/90 min-[380px]:h-10 min-[380px]:px-4">
                     {getInitials(session.user?.name)}
                   </Button>
                 </DropdownMenuTrigger>
@@ -230,7 +230,7 @@ export default function NavigationClient({
             </>
           ) : (
             <Link href="/auth/signin">
-              <Button className="btn-modern bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-4 md:px-6">
+              <Button className="btn-modern h-9 bg-primary px-3 text-sm text-primary-foreground hover:bg-primary/90 min-[380px]:h-10 min-[380px]:px-4 md:px-6">
                 Sign In
               </Button>
             </Link>
@@ -238,7 +238,7 @@ export default function NavigationClient({
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden h-10 w-10 inline-flex items-center justify-center rounded-xl transition-colors duration-300 hover:bg-primary/10 active:scale-95"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-300 hover:bg-primary/10 active:scale-95 min-[380px]:h-10 min-[380px]:w-10 lg:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}

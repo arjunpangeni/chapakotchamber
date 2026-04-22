@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
+import Header from '@/components/admin/header'
 import Sidebar from '@/components/admin/sidebar'
 
 export const metadata = {
@@ -25,6 +26,9 @@ export default async function AdminLayout({
         <Sidebar />
       </div>
       <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="lg:hidden">
+          <Header />
+        </div>
         <main className="flex-1 overflow-auto bg-transparent p-4 md:p-6">
           {children}
         </main>

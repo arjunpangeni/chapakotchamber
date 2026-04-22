@@ -183,6 +183,12 @@
     font-feature-settings: 'rounding' 1;
   }
 
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+    --removed-body-scroll-bar-size: 0px;
+  }
+
   .site-sky-bg {
     background:
       radial-gradient(circle at 20% 20%, rgba(99, 183, 247, 0.22), transparent 34%),
